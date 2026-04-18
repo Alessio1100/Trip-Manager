@@ -1,0 +1,1287 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Perù 2026 — Il Mio Viaggio</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --gold: #C9992A;
+    --gold-light: #E8B84B;
+    --ink: #1A1208;
+    --cream: #FAF6EE;
+    --parchment: #F0E8D0;
+    --terra: #8B3A1A;
+    --terracotta: #C4622D;
+    --moss: #3D5A2E;
+    --sky: #2B5F8E;
+    --mist: #EBF0F5;
+    --border: #D4C4A0;
+    --text: #2C2012;
+    --text-muted: #7A6845;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    font-family: 'DM Sans', sans-serif;
+    background: var(--cream);
+    color: var(--text);
+    min-height: 100vh;
+  }
+
+  /* ── HEADER ── */
+  header {
+    background: var(--ink);
+    color: var(--cream);
+    padding: 0;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    box-shadow: 0 2px 20px rgba(0,0,0,.4);
+  }
+  .header-inner {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    height: 64px;
+  }
+  .logo {
+    font-family: 'Playfair Display', serif;
+    font-size: 1.4rem;
+    color: var(--gold-light);
+    letter-spacing: .03em;
+  }
+  .logo span { color: #fff; font-style: italic; font-size: 1rem; margin-left: 6px; }
+  nav { display: flex; gap: 4px; }
+  nav button {
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    font-weight: 500;
+    padding: 8px 14px;
+    border-radius: 6px;
+    transition: all .2s;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+  }
+  nav button:hover { background: rgba(255,255,255,.08); color: #fff; }
+  nav button.active { background: var(--gold); color: var(--ink); }
+
+  /* ── LAYOUT ── */
+  main { max-width: 1400px; margin: 0 auto; padding: 32px; }
+  .tab-content { display: none; }
+  .tab-content.active { display: block; }
+
+  /* ── HERO BANNER ── */
+  .hero {
+    background: linear-gradient(135deg, var(--ink) 0%, #2A1A08 50%, #1A0808 100%);
+    border-radius: 16px;
+    padding: 48px 48px 40px;
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+    color: #fff;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    top: -60px; right: -60px;
+    width: 300px; height: 300px;
+    background: radial-gradient(circle, rgba(201,153,42,.25) 0%, transparent 70%);
+    border-radius: 50%;
+  }
+  .hero::after {
+    content: 'PERÙ';
+    position: absolute;
+    bottom: -20px; right: 40px;
+    font-family: 'Playfair Display', serif;
+    font-size: 9rem;
+    font-weight: 700;
+    color: rgba(201,153,42,.07);
+    letter-spacing: -.02em;
+    line-height: 1;
+    pointer-events: none;
+  }
+  .hero h1 {
+    font-family: 'Playfair Display', serif;
+    font-size: 2.4rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--gold-light);
+  }
+  .hero p { color: #ccc; font-size: 1rem; margin-bottom: 24px; }
+  .hero-stats {
+    display: flex;
+    gap: 24px;
+    flex-wrap: wrap;
+  }
+  .stat-card {
+    background: rgba(255,255,255,.07);
+    border: 1px solid rgba(201,153,42,.3);
+    border-radius: 10px;
+    padding: 14px 20px;
+    min-width: 140px;
+  }
+  .stat-card .val {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--gold-light);
+    line-height: 1;
+  }
+  .stat-card .lbl { font-size: .78rem; color: #aaa; margin-top: 4px; text-transform: uppercase; letter-spacing: .08em; }
+
+  /* ── PROGRESS BAR ── */
+  .progress-section { margin-bottom: 32px; }
+  .progress-section h2 { font-family: 'Playfair Display', serif; font-size: 1.4rem; margin-bottom: 16px; }
+  .category-progress { display: flex; flex-direction: column; gap: 10px; }
+  .cat-bar { background: var(--parchment); border-radius: 10px; padding: 12px 16px; border: 1px solid var(--border); }
+  .cat-bar-top { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+  .cat-bar-label { font-size: .9rem; font-weight: 500; display: flex; align-items: center; gap: 8px; }
+  .cat-dot { width: 10px; height: 10px; border-radius: 50%; }
+  .cat-bar-pct { font-size: .85rem; color: var(--text-muted); font-weight: 500; }
+  .bar-track { background: var(--border); border-radius: 99px; height: 6px; }
+  .bar-fill { height: 6px; border-radius: 99px; transition: width .6s ease; }
+
+  /* ── CHECKLIST ── */
+  .checklist-filters {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 20px;
+  }
+  .filter-btn {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 99px;
+    padding: 6px 14px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .82rem;
+    cursor: pointer;
+    transition: all .2s;
+    font-weight: 500;
+    color: var(--text-muted);
+  }
+  .filter-btn:hover, .filter-btn.active {
+    background: var(--ink);
+    color: var(--gold-light);
+    border-color: var(--ink);
+  }
+
+  .section-header {
+    background: var(--ink);
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: .95rem;
+    font-weight: 700;
+    padding: 10px 16px;
+    border-radius: 8px 8px 0 0;
+    letter-spacing: .05em;
+    text-transform: uppercase;
+    margin-top: 24px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .section-header:first-child { margin-top: 0; }
+
+  .checklist-table {
+    width: 100%;
+    border-collapse: collapse;
+    border: 1px solid var(--border);
+    border-top: none;
+    border-radius: 0 0 8px 8px;
+    overflow: hidden;
+    margin-bottom: 4px;
+    background: #fff;
+  }
+  .checklist-table thead tr { background: var(--parchment); }
+  .checklist-table th {
+    padding: 10px 14px;
+    font-size: .78rem;
+    text-transform: uppercase;
+    letter-spacing: .08em;
+    color: var(--text-muted);
+    text-align: left;
+    font-weight: 600;
+    border-bottom: 1px solid var(--border);
+  }
+  .checklist-table td {
+    padding: 11px 14px;
+    font-size: .88rem;
+    border-bottom: 1px solid #f0e8d0;
+    vertical-align: middle;
+  }
+  .checklist-table tr:last-child td { border-bottom: none; }
+  .checklist-table tr.done td { opacity: .55; }
+  .checklist-table tr.done .item-name { text-decoration: line-through; color: var(--text-muted); }
+  .checklist-table tr:hover td { background: var(--cream); }
+
+  .check-btn {
+    width: 22px; height: 22px;
+    border-radius: 6px;
+    border: 2px solid var(--border);
+    background: #fff;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    transition: all .2s;
+    flex-shrink: 0;
+  }
+  .check-btn.checked { background: var(--moss); border-color: var(--moss); color: #fff; }
+
+  .badge {
+    display: inline-block;
+    padding: 2px 10px;
+    border-radius: 99px;
+    font-size: .75rem;
+    font-weight: 600;
+    white-space: nowrap;
+  }
+  .badge-voli { background: #DBEAFE; color: #1E40AF; }
+  .badge-hotel { background: #FCE7F3; color: #9D174D; }
+  .badge-bus { background: #D1FAE5; color: #065F46; }
+  .badge-trasporti { background: #FEF3C7; color: #92400E; }
+  .badge-tour { background: #EDE9FE; color: #5B21B6; }
+  .badge-ingressi { background: #FFEDD5; color: #9A3412; }
+  .badge-documenti { background: #F3F4F6; color: #374151; }
+  .badge-salute { background: #ECFDF5; color: #065F46; }
+  .badge-homestay { background: #FEF9C3; color: #713F12; }
+  .badge-cibo { background: #FFF7ED; color: #9A3412; }
+  .badge-varie { background: #F0FDF4; color: #166534; }
+
+  .quando-badge {
+    display: inline-block;
+    padding: 2px 8px;
+    border-radius: 4px;
+    font-size: .75rem;
+    font-weight: 500;
+  }
+  .quando-subito { background: #FEE2E2; color: #991B1B; font-weight: 700; }
+  .quando-prima { background: #FEF3C7; color: #92400E; }
+  .quando-online { background: #DBEAFE; color: #1E40AF; }
+  .quando-loco { background: #F3F4F6; color: #374151; }
+
+  .cost-cell { font-weight: 600; color: var(--moss); }
+  .note-cell { color: var(--text-muted); font-size: .82rem; font-style: italic; }
+  .date-cell { white-space: nowrap; color: var(--text-muted); font-size: .82rem; }
+
+  .add-row-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    color: var(--text-muted);
+    font-family: 'DM Sans', sans-serif;
+    font-size: .82rem;
+    cursor: pointer;
+    padding: 8px 16px;
+    border-radius: 0 0 8px 8px;
+    width: 100%;
+    transition: all .2s;
+    margin-bottom: 16px;
+  }
+  .add-row-btn:hover { background: var(--parchment); color: var(--text); }
+
+  .total-bar {
+    background: var(--ink);
+    color: #fff;
+    border-radius: 10px;
+    padding: 16px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: 24px;
+  }
+  .total-bar .lbl { font-size: .85rem; color: #aaa; }
+  .total-bar .val { font-size: 1.6rem; font-weight: 700; color: var(--gold-light); font-family: 'Playfair Display', serif; }
+
+  /* ── ITINERARIO ── */
+  .itinerary-grid { display: grid; gap: 16px; }
+  .day-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+    transition: box-shadow .2s;
+  }
+  .day-card:hover { box-shadow: 0 4px 20px rgba(0,0,0,.08); }
+  .day-header {
+    display: flex;
+    align-items: center;
+    gap: 0;
+    cursor: pointer;
+    padding: 0;
+  }
+  .day-number {
+    background: var(--ink);
+    color: var(--gold-light);
+    font-family: 'Playfair Display', serif;
+    font-size: 1.2rem;
+    font-weight: 700;
+    padding: 16px 20px;
+    min-width: 72px;
+    text-align: center;
+    line-height: 1;
+  }
+  .day-number small { display: block; font-family: 'DM Sans', sans-serif; font-size: .7rem; color: #aaa; font-weight: 400; text-transform: uppercase; letter-spacing: .05em; margin-top: 2px; }
+  .day-info { padding: 14px 18px; flex: 1; }
+  .day-info h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 4px; }
+  .day-tags { display: flex; gap: 6px; flex-wrap: wrap; }
+  .day-tag {
+    background: var(--parchment);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 2px 8px;
+    font-size: .75rem;
+    color: var(--text-muted);
+  }
+  .day-expand { padding: 14px 18px; font-size: 1.1rem; color: var(--text-muted); transition: transform .2s; }
+  .day-expand.open { transform: rotate(180deg); }
+  .day-body {
+    display: none;
+    border-top: 1px solid var(--border);
+    padding: 16px 18px;
+  }
+  .day-body.open { display: block; }
+  .day-activities { display: flex; flex-direction: column; gap: 10px; }
+  .activity {
+    display: flex;
+    gap: 12px;
+    align-items: flex-start;
+    padding: 10px 12px;
+    background: var(--cream);
+    border-radius: 8px;
+    border-left: 3px solid var(--border);
+  }
+  .activity-time {
+    font-size: .78rem;
+    font-weight: 600;
+    color: var(--gold);
+    white-space: nowrap;
+    min-width: 50px;
+    margin-top: 2px;
+  }
+  .activity-content { flex: 1; }
+  .activity-title { font-size: .9rem; font-weight: 500; margin-bottom: 2px; }
+  .activity-note { font-size: .8rem; color: var(--text-muted); }
+  .activity-type-icon { font-size: 1rem; margin-top: 2px; }
+  .add-activity-btn {
+    background: none;
+    border: 1px dashed var(--border);
+    border-radius: 8px;
+    padding: 8px;
+    width: 100%;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .82rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    margin-top: 8px;
+    transition: all .2s;
+  }
+  .add-activity-btn:hover { background: var(--parchment); color: var(--text); }
+  .day-notes-input {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    color: var(--text);
+    background: var(--cream);
+    resize: vertical;
+    min-height: 60px;
+    margin-top: 12px;
+  }
+  .day-notes-input:focus { outline: none; border-color: var(--gold); }
+
+  /* ── BUDGET ── */
+  .budget-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+  .budget-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 20px 24px;
+  }
+  .budget-card h3 { font-family: 'Playfair Display', serif; font-size: 1.1rem; margin-bottom: 16px; display: flex; align-items: center; gap: 8px; }
+  .budget-table { width: 100%; border-collapse: collapse; }
+  .budget-table td, .budget-table th { padding: 8px 10px; font-size: .85rem; text-align: left; border-bottom: 1px solid var(--border); }
+  .budget-table th { font-size: .75rem; text-transform: uppercase; letter-spacing: .06em; color: var(--text-muted); font-weight: 600; }
+  .budget-table tr:last-child td { border-bottom: none; font-weight: 700; }
+  .budget-table .green { color: var(--moss); }
+  .budget-table .red { color: var(--terra); }
+  .big-total {
+    background: linear-gradient(135deg, var(--ink), #2A1A08);
+    color: #fff;
+    border-radius: 12px;
+    padding: 28px 32px;
+    grid-column: 1 / -1;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .big-total .label { font-size: .85rem; color: #aaa; text-transform: uppercase; letter-spacing: .1em; margin-bottom: 6px; }
+  .big-total .amount { font-family: 'Playfair Display', serif; font-size: 3rem; font-weight: 700; color: var(--gold-light); line-height: 1; }
+  .big-total .sub { font-size: .8rem; color: #888; margin-top: 4px; }
+
+  /* ── NOTE ── */
+  .notes-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px, 1fr)); gap: 16px; }
+  .note-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 10px;
+    overflow: hidden;
+    position: relative;
+  }
+  .note-card-header {
+    height: 6px;
+  }
+  .note-card-body { padding: 16px; }
+  .note-card-body h4 { font-family: 'Playfair Display', serif; font-size: 1rem; margin-bottom: 6px; }
+  .note-card-body textarea {
+    width: 100%;
+    border: none;
+    resize: none;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .85rem;
+    color: var(--text);
+    min-height: 80px;
+    background: transparent;
+  }
+  .note-card-body textarea:focus { outline: none; }
+  .note-delete {
+    position: absolute;
+    top: 10px; right: 10px;
+    background: none;
+    border: none;
+    color: #ccc;
+    cursor: pointer;
+    font-size: 1rem;
+    line-height: 1;
+    display: none;
+  }
+  .note-card:hover .note-delete { display: block; }
+  .add-note-btn {
+    background: var(--parchment);
+    border: 2px dashed var(--border);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2rem;
+    color: var(--border);
+    cursor: pointer;
+    min-height: 120px;
+    transition: all .2s;
+  }
+  .add-note-btn:hover { border-color: var(--gold); color: var(--gold); background: #fff; }
+
+  /* ── MODAL ── */
+  .modal-overlay {
+    position: fixed; inset: 0;
+    background: rgba(0,0,0,.5);
+    z-index: 1000;
+    display: none;
+    align-items: center;
+    justify-content: center;
+  }
+  .modal-overlay.open { display: flex; }
+  .modal {
+    background: #fff;
+    border-radius: 14px;
+    width: min(500px, 95vw);
+    padding: 28px;
+    max-height: 90vh;
+    overflow-y: auto;
+  }
+  .modal h2 { font-family: 'Playfair Display', serif; font-size: 1.3rem; margin-bottom: 20px; }
+  .form-group { margin-bottom: 14px; }
+  .form-group label { display: block; font-size: .8rem; font-weight: 600; text-transform: uppercase; letter-spacing: .07em; color: var(--text-muted); margin-bottom: 6px; }
+  .form-group input, .form-group select, .form-group textarea {
+    width: 100%;
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 12px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    color: var(--text);
+    background: var(--cream);
+    transition: border .2s;
+  }
+  .form-group input:focus, .form-group select:focus, .form-group textarea:focus { outline: none; border-color: var(--gold); }
+  .form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+  .modal-actions { display: flex; gap: 10px; justify-content: flex-end; margin-top: 20px; }
+  .btn-primary {
+    background: var(--ink);
+    color: var(--gold-light);
+    border: none;
+    border-radius: 8px;
+    padding: 10px 22px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .2s;
+  }
+  .btn-primary:hover { background: #2A1A08; }
+  .btn-cancel {
+    background: var(--parchment);
+    color: var(--text-muted);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 10px 18px;
+    font-family: 'DM Sans', sans-serif;
+    font-size: .9rem;
+    cursor: pointer;
+  }
+
+  @media (max-width: 768px) {
+    main { padding: 16px; }
+    .budget-grid { grid-template-columns: 1fr; }
+    .hero { padding: 28px 24px; }
+    .hero h1 { font-size: 1.8rem; }
+    .hero::after { display: none; }
+    nav button { font-size: .75rem; padding: 6px 10px; }
+  }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <div class="logo">Perù 2026 <span>✈ Il Mio Viaggio</span></div>
+    <nav>
+      <button class="active" onclick="showTab('dashboard')">Dashboard</button>
+      <button onclick="showTab('checklist')">Checklist</button>
+      <button onclick="showTab('itinerario')">Itinerario</button>
+      <button onclick="showTab('budget')">Budget</button>
+      <button onclick="showTab('note')">Note</button>
+    </nav>
+  </div>
+</header>
+
+<main>
+
+<!-- ═══════════════ DASHBOARD ═══════════════ -->
+<div id="tab-dashboard" class="tab-content active">
+
+  <div class="hero">
+    <h1>🦙 Lima · Paracas · Arequipa · Puno · Cusco · Lima</h1>
+    <p>25 Luglio – 6 Agosto 2026 &nbsp;·&nbsp; 13 notti &nbsp;·&nbsp; 2 persone</p>
+    <div class="hero-stats" id="hero-stats"></div>
+  </div>
+
+  <div class="progress-section">
+    <h2>Avanzamento per Categoria</h2>
+    <div class="category-progress" id="cat-progress"></div>
+  </div>
+
+  <div style="display:grid; grid-template-columns:1fr 1fr; gap:20px;" id="dashboard-sections"></div>
+
+</div>
+
+<!-- ═══════════════ CHECKLIST ═══════════════ -->
+<div id="tab-checklist" class="tab-content">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem;">Checklist Completa</h2>
+    <button class="btn-primary" onclick="openAddModal()">+ Aggiungi voce</button>
+  </div>
+  <div class="checklist-filters" id="checklist-filters"></div>
+  <div id="checklist-content"></div>
+  <div class="total-bar">
+    <div>
+      <div class="lbl">Costo Totale Stimato (a persona)</div>
+      <div style="font-size:.82rem; color:#888; margin-top:2px;" id="total-sub"></div>
+    </div>
+    <div class="val" id="total-val">€ 2.674</div>
+  </div>
+</div>
+
+<!-- ═══════════════ ITINERARIO ═══════════════ -->
+<div id="tab-itinerario" class="tab-content">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem;">Itinerario Giorno per Giorno</h2>
+    <button class="btn-primary" onclick="openAddDayModal()">+ Aggiungi giorno</button>
+  </div>
+  <div class="itinerary-grid" id="itinerary-grid"></div>
+</div>
+
+<!-- ═══════════════ BUDGET ═══════════════ -->
+<div id="tab-budget" class="tab-content">
+  <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem; margin-bottom:20px;">Gestione Budget</h2>
+  <div class="budget-grid" id="budget-grid"></div>
+</div>
+
+<!-- ═══════════════ NOTE ═══════════════ -->
+<div id="tab-note" class="tab-content">
+  <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="font-family:'Playfair Display',serif; font-size:1.5rem;">Note & Informazioni Utili</h2>
+  </div>
+  <div class="notes-grid" id="notes-grid"></div>
+</div>
+
+</main>
+
+<!-- ═══════════════ MODAL ADD VOCE ═══════════════ -->
+<div class="modal-overlay" id="add-modal">
+  <div class="modal">
+    <h2>Aggiungi Voce</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Sezione</label>
+        <select id="fm-sezione">
+          <option>PUNTI CRITICI (DA FARE SUBITO)</option>
+          <option>BUROCRAZIA E PRE-PARTENZA</option>
+          <option>ALLOGGI (DETTAGLIATI PER NOTTE)</option>
+          <option>TRASPORTI E LOGISTICA</option>
+          <option>TOUR E INGRESSI</option>
+          <option>VITA QUOTIDIANA (STIME)</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label>Categoria</label>
+        <select id="fm-cat">
+          <option>Voli</option><option>Hotel</option><option>Bus</option>
+          <option>Trasporti</option><option>Tour</option><option>Ingressi</option>
+          <option>Documenti</option><option>Salute</option><option>Homestay</option>
+          <option>Cibo</option><option>Varie</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Voce / Attività</label>
+      <input type="text" id="fm-voce" placeholder="es. Volo Lima - Cusco">
+    </div>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Giorno</label>
+        <input type="date" id="fm-giorno">
+      </div>
+      <div class="form-group">
+        <label>Costo stimato (€/pers.)</label>
+        <input type="number" id="fm-costo" placeholder="0">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Quando prenotare</label>
+      <select id="fm-quando">
+        <option>SUBITO</option><option>Prima di partire</option>
+        <option>Online</option><option>In loco</option><option>In loco/Online</option>
+        <option>In loco/Tour</option><option>Online/Agenzia</option>
+      </select>
+    </div>
+    <div class="form-group">
+      <label>Note</label>
+      <textarea id="fm-note" rows="2"></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('add-modal')">Annulla</button>
+      <button class="btn-primary" onclick="saveNewItem()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD ATTIVITÀ GIORNO -->
+<div class="modal-overlay" id="add-activity-modal">
+  <div class="modal">
+    <h2 id="activity-modal-title">Aggiungi Attività</h2>
+    <input type="hidden" id="activity-day-id">
+    <div class="form-row">
+      <div class="form-group">
+        <label>Ora</label>
+        <input type="time" id="act-time" value="09:00">
+      </div>
+      <div class="form-group">
+        <label>Tipo</label>
+        <select id="act-type">
+          <option value="🚶">🚶 Visita</option>
+          <option value="🍽️">🍽️ Pasto</option>
+          <option value="🚌">🚌 Trasporto</option>
+          <option value="🏨">🏨 Alloggio</option>
+          <option value="🎟️">🎟️ Ingresso</option>
+          <option value="🥾">🥾 Trek/Escursione</option>
+          <option value="📷">📷 Fotografia</option>
+          <option value="🛒">🛒 Shopping</option>
+          <option value="💤">💤 Riposo</option>
+        </select>
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Titolo attività</label>
+      <input type="text" id="act-title" placeholder="es. Visita Machu Picchu">
+    </div>
+    <div class="form-group">
+      <label>Note</label>
+      <input type="text" id="act-note" placeholder="es. Portare acqua e cappello">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('add-activity-modal')">Annulla</button>
+      <button class="btn-primary" onclick="saveActivity()">Aggiungi</button>
+    </div>
+  </div>
+</div>
+
+<!-- MODAL ADD GIORNO -->
+<div class="modal-overlay" id="add-day-modal">
+  <div class="modal">
+    <h2>Aggiungi Giorno all'Itinerario</h2>
+    <div class="form-row">
+      <div class="form-group">
+        <label>Data</label>
+        <input type="date" id="nd-date">
+      </div>
+      <div class="form-group">
+        <label>N° Giorno</label>
+        <input type="number" id="nd-num" min="1" max="30">
+      </div>
+    </div>
+    <div class="form-group">
+      <label>Titolo</label>
+      <input type="text" id="nd-title" placeholder="es. Arequipa – Città Bianca">
+    </div>
+    <div class="form-group">
+      <label>Luogo principale</label>
+      <input type="text" id="nd-place" placeholder="es. Arequipa">
+    </div>
+    <div class="form-group">
+      <label>Alloggio</label>
+      <input type="text" id="nd-hotel" placeholder="es. Hostal del Centro">
+    </div>
+    <div class="modal-actions">
+      <button class="btn-cancel" onclick="closeModal('add-day-modal')">Annulla</button>
+      <button class="btn-primary" onclick="saveNewDay()">Aggiungi Giorno</button>
+    </div>
+  </div>
+</div>
+
+<script>
+// ══════════════════════════════════
+//  DATA
+// ══════════════════════════════════
+const CAT_COLORS = {
+  'Voli': '#3B82F6', 'Hotel': '#EC4899', 'Bus': '#10B981',
+  'Trasporti': '#F59E0B', 'Tour': '#8B5CF6', 'Ingressi': '#F97316',
+  'Documenti': '#6B7280', 'Salute': '#14B8A6', 'Homestay': '#EAB308',
+  'Cibo': '#F97316', 'Varie': '#22C55E'
+};
+
+let data = JSON.parse(localStorage.getItem('peru_data') || 'null') || {
+  items: [
+    // PUNTI CRITICI
+    {id:1, done:true,  section:'PUNTI CRITICI (DA FARE SUBITO)', giorno:'', cat:'Voli',      voce:'Volo A/R Roma – Lima',                     quando:'SUBITO',          costo:1350, note:'Confermato 1250 + 130 cambio volo'},
+    {id:2, done:true,  section:'PUNTI CRITICI (DA FARE SUBITO)', giorno:'2026-08-03', cat:'Ingressi',  voce:'Biglietto Machu Picchu',                   quando:'SUBITO',          costo:53,   note:'Circuito 3 su tuboleto.cultura.pe'},
+    {id:3, done:true,  section:'PUNTI CRITICI (DA FARE SUBITO)', giorno:'2026-08-04', cat:'Trasporti', voce:'Treno Ritorno (Aguas Calientes – Cusco)',   quando:'SUBITO',          costo:75,   note:'Opzione Bimodal su PeruRail/IncaRail'},
+    {id:4, done:true,  section:'PUNTI CRITICI (DA FARE SUBITO)', giorno:'2026-08-05', cat:'Voli',      voce:'Volo interno Cusco – Lima',                quando:'SUBITO',          costo:65,   note:'JetSmart 12:45–14:25'},
+    // BUROCRAZIA
+    {id:5, done:false, section:'BUROCRAZIA E PRE-PARTENZA',      giorno:'', cat:'Documenti',  voce:'ESTA (Visto transito USA)',                 quando:'Prima di partire', costo:40,   note:'Sito ufficiale governativo USA'},
+    {id:6, done:true,  section:'BUROCRAZIA E PRE-PARTENZA',      giorno:'', cat:'Salute',     voce:'Assicurazione Medico/Bagaglio',             quando:'Prima di partire', costo:72,   note:'Deve coprire trekking e alta quota'},
+    // ALLOGGI
+    {id:7,  done:true,  section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-25', cat:'Hotel',    voce:'Notte 1: Paracas',                          quando:'Online',          costo:25,   note:'Arrivo a Ica in tarda serata'},
+    {id:8,  done:true,  section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-26', cat:'Bus',      voce:'Notte 2: Pullman Notturno (Ica–Arequipa)',   quando:'Online',          costo:50,   note:'Sedili Cama (spesa trasporto/hotel unita)'},
+    {id:9,  done:true,  section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-27', cat:'Hotel',    voce:'Notte 3: Arequipa',                          quando:'Online',          costo:30,   note:'Centro storico'},
+    {id:10, done:false, section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-28', cat:'Hotel',    voce:'Notte 4: Chivay',                            quando:'Online',          costo:25,   note:'Base per il Canyon del Colca'},
+    {id:11, done:true,  section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-29', cat:'Homestay', voce:'Notte 5: Puno',                              quando:'Online/Agenzia',  costo:45,   note:'Costo include cena e colazione'},
+    {id:12, done:false, section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-30', cat:'Hotel',    voce:'Notte 6: Sicuani',                           quando:'Online',          costo:25,   note:'Campo base per Rainbow Mountain'},
+    {id:13, done:true,  section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-07-31', cat:'Hotel',    voce:'Notti 7–11: Cusco',                          quando:'Online',          costo:59,   note:'(118 totale) Arrivo dopo il trekking'},
+    {id:14, done:false, section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-08-03', cat:'Hotel',    voce:'Notte 10: Aguas Calientes',                  quando:'Online',          costo:35,   note:'Arrivo via Ruta Hidroeléctrica'},
+    {id:15, done:false, section:'ALLOGGI (DETTAGLIATI PER NOTTE)', giorno:'2026-08-05', cat:'Hotel',    voce:'Notte 12: Lima',                             quando:'Online',          costo:35,   note:'Ultima notte in Perù'},
+    // TRASPORTI
+    {id:16, done:true,  section:'TRASPORTI E LOGISTICA', giorno:'2026-07-25', cat:'Trasporti', voce:'Pullman Lima – Paracas',               quando:'In loco/Online', costo:21, note:'Partenza ore 19:00'},
+    {id:17, done:false, section:'TRASPORTI E LOGISTICA', giorno:'2026-07-29', cat:'Trasporti', voce:'Spostamento Arequipa – Puno',          quando:'In loco/Tour',   costo:40, note:'Incluso spesso nel tour del Colca'},
+    {id:18, done:false, section:'TRASPORTI E LOGISTICA', giorno:'2026-07-30', cat:'Trasporti', voce:'Pullman Puno – Sicuani',               quando:'In loco',        costo:20, note:'Al terminal di Puno'},
+    {id:19, done:false, section:'TRASPORTI E LOGISTICA', giorno:'2026-07-31', cat:'Trasporti', voce:'Taxi Sicuani – Vinicunca (A/R)',       quando:'In loco',        costo:25, note:'Da dividere in due'},
+    {id:20, done:false, section:'TRASPORTI E LOGISTICA', giorno:'2026-07-31', cat:'Trasporti', voce:'Pullman Sicuani – Cusco',              quando:'In loco',        costo:10, note:'Da prendere sulla statale'},
+    {id:21, done:false, section:'TRASPORTI E LOGISTICA', giorno:'2026-08-02', cat:'Trasporti', voce:'Autista privato Valle Sacra',          quando:'In loco',        costo:25, note:'Prezzo a persona per tour intero'},
+    {id:22, done:false, section:'TRASPORTI E LOGISTICA', giorno:'2026-08-03', cat:'Trasporti', voce:'Minivan Cusco – Hidroeléctrica',        quando:'In loco',        costo:15, note:'Prenotare in agenzia a Cusco'},
+    // TOUR
+    {id:23, done:true,  section:'TOUR E INGRESSI', giorno:'2026-07-26', cat:'Tour',     voce:'Isole Ballestas + Huacachina',       quando:'In loco',        costo:48, note:'Tour barca + Dune buggy'},
+    {id:24, done:false, section:'TOUR E INGRESSI', giorno:'2026-07-29', cat:'Tour',     voce:'Escursione Canyon del Colca',        quando:'In loco/Online', costo:40, note:'Guida e trasporto inclusi'},
+    {id:25, done:false, section:'TOUR E INGRESSI', giorno:'2026-07-31', cat:'Ingressi', voce:'Tassa Rainbow Mountain',             quando:'In loco',        costo:6,  note:'25 Soles in contanti'},
+    {id:26, done:false, section:'TOUR E INGRESSI', giorno:'2026-08-02', cat:'Ingressi', voce:'Boleto Turistico Cusco (Generale)',   quando:'In loco',        costo:35, note:'Valido 10 giorni per più siti'},
+    {id:27, done:false, section:'TOUR E INGRESSI', giorno:'2026-08-02', cat:'Ingressi', voce:'Saline di Maras',                    quando:'In loco',        costo:5,  note:'20 Soles (non incluso nel Boleto)'},
+    // VITA QUOTIDIANA
+    {id:28, done:false, section:'VITA QUOTIDIANA (STIME)', giorno:'', cat:'Cibo',  voce:'Vitto giornaliero (14 giorni)', quando:'In loco', costo:350, note:'Media 25€/giorno'},
+    {id:29, done:false, section:'VITA QUOTIDIANA (STIME)', giorno:'', cat:'Varie', voce:'Taxi urbani, SIM card, Acqua, Mance', quando:'In loco', costo:50, note:''},
+  ],
+  itinerary: [
+    {id:1, date:'2026-07-25', day:1, title:'Partenza Roma → Lima → Paracas', place:'Paracas', hotel:'TBD – Paracas', notes:'', activities:[
+      {time:'19:00', type:'🚌', title:'Pullman Lima – Paracas', note:'Partenza bus dal terminal Lima'},
+    ]},
+    {id:2, date:'2026-07-26', day:2, title:'Isole Ballestas & Huacachina', place:'Paracas / Ica', hotel:'Pullman notturno Ica–Arequipa', notes:'Giornata piena tra mare e deserto', activities:[
+      {time:'07:00', type:'🎟️', title:'Tour Isole Ballestas', note:'Partenza in barca – prenotare in loco'},
+      {time:'13:00', type:'🥾', title:'Huacachina – Dune Buggy & Sandboard', note:'Tour pomeriggio'},
+      {time:'22:00', type:'🚌', title:'Pullman notturno Ica – Arequipa', note:'Sedili Cama'},
+    ]},
+    {id:3, date:'2026-07-27', day:3, title:'Arequipa – La Città Bianca', place:'Arequipa', hotel:'Hostal Centro Storico', notes:'', activities:[
+      {time:'08:00', type:'🍽️', title:'Colazione al mercato San Camilo', note:'Probar el queso helado'},
+      {time:'10:00', type:'🚶', title:'Visita Centro Storico', note:'Plaza de Armas, Catedral, Barrio de San Lázaro'},
+      {time:'14:00', type:'🚶', title:'Monastero di Santa Catalina', note:'Biglietto ~8€'},
+    ]},
+    {id:4, date:'2026-07-28', day:4, title:'Canyon del Colca – Discesa', place:'Chivay', hotel:'Hostal Chivay', notes:'Alta quota ~3600m – bere molta acqua', activities:[
+      {time:'04:30', type:'🥾', title:'Partenza verso Cruz del Cóndor', note:'Arrivare all\'alba per vedere i condor'},
+      {time:'12:00', type:'🍽️', title:'Pranzo a Chivay', note:'Tentare il cuy!'},
+    ]},
+    {id:5, date:'2026-07-29', day:5, title:'Puno – Lago Titicaca', place:'Puno', hotel:'Homestay Isola Uros', notes:'Include cena e colazione', activities:[
+      {time:'06:00', type:'🚌', title:'Bus Arequipa – Puno', note:'Incluso nel tour Colca spesso'},
+      {time:'14:00', type:'🚶', title:'Tour Isole Galleggianti Uros', note:'Prenotare da agenzia locale'},
+    ]},
+    {id:6, date:'2026-07-30', day:6, title:'Rainbow Mountain', place:'Sicuani', hotel:'Hostal Sicuani', notes:'Campo base per Vinicunca', activities:[
+      {time:'07:00', type:'🚌', title:'Bus Puno – Sicuani', note:'Al terminal di Puno'},
+    ]},
+    {id:7, date:'2026-07-31', day:7, title:'Vinicunca + Arrivo Cusco', place:'Cusco', hotel:'Hotel Cusco (5 notti)', notes:'Attenzione quota – camminare piano', activities:[
+      {time:'04:00', type:'🥾', title:'Escursione Rainbow Mountain (Vinicunca)', note:'Taxi A/R da Sicuani – 25€'},
+      {time:'15:00', type:'🚌', title:'Bus Sicuani – Cusco', note:'Dalla statale principale'},
+    ]},
+    {id:8, date:'2026-08-01', day:8, title:'Cusco – Esplorazione Città', place:'Cusco', hotel:'Hotel Cusco', notes:'Giornata di acclimatazione', activities:[
+      {time:'09:00', type:'🚶', title:'Plaza de Armas & Catedral del Cusco', note:'Boleto Turistico'},
+      {time:'12:00', type:'🍽️', title:'Pranzo al Mercado de San Pedro', note:'Mercato locale'},
+      {time:'15:00', type:'🚶', title:'Sacsayhuamán', note:'Incluso nel Boleto Turistico'},
+    ]},
+    {id:9, date:'2026-08-02', day:9, title:'Valle Sacra degli Inca', place:'Valle Sacra', hotel:'Hotel Cusco', notes:'', activities:[
+      {time:'07:00', type:'🚶', title:'Tour Valle Sacra in autista privato', note:'Pisac, Ollantaytambo, Chinchero'},
+      {time:'12:00', type:'🏔️', title:'Saline di Maras', note:'20 Soles, non nel Boleto'},
+    ]},
+    {id:10, date:'2026-08-03', day:10, title:'Machu Picchu – Via Hidroeléctrica', place:'Aguas Calientes', hotel:'Hotel Aguas Calientes', notes:'', activities:[
+      {time:'05:00', type:'🚌', title:'Minivan Cusco – Hidroeléctrica', note:'Prenotare in agenzia a Cusco'},
+      {time:'11:00', type:'🥾', title:'Trek Hidroeléctrica → Aguas Calientes', note:'~2–3 ore a piedi sul binario'},
+    ]},
+    {id:11, date:'2026-08-04', day:11, title:'MACHU PICCHU', place:'Machu Picchu', hotel:'Hotel Cusco', notes:'IL GIORNO DEL VIAGGIO!', activities:[
+      {time:'05:30', type:'🎟️', title:'Ingresso Machu Picchu – Circuito 3', note:'Biglietto prenotato su tuboleto.cultura.pe'},
+      {time:'06:00', type:'📷', title:'Sunrise a Machu Picchu', note:'Essere all\'entrata puntualissimi'},
+      {time:'14:00', type:'🚂', title:'Treno ritorno Aguas Calientes – Cusco', note:'Bimodal PeruRail/IncaRail'},
+    ]},
+    {id:12, date:'2026-08-05', day:12, title:'Cusco → Lima – Ultima Sera', place:'Lima', hotel:'Hotel Lima', notes:'Ultima notte in Perù', activities:[
+      {time:'11:45', type:'✈️', title:'Volo Cusco – Lima JetSmart', note:'12:45–14:25'},
+      {time:'18:00', type:'🚶', title:'Passeggiata a Miraflores', note:'Costa verde, tramonto sull\'oceano'},
+      {time:'20:00', type:'🍽️', title:'Cena in un ristorante ceviche', note:'Ultima cena peruviana!'},
+    ]},
+    {id:13, date:'2026-08-06', day:13, title:'Rientro a Roma', place:'Roma', hotel:'Casa', notes:'', activities:[
+      {time:'05:00', type:'✈️', title:'Volo Lima – Roma A/R', note:'Scalo previsto'},
+    ]},
+  ],
+  notes: [
+    {id:1, title:'Vaccini & Salute', color:'#10B981', text:'☑ Antiepatite A\n☑ Antiepatite B\n☑ Febbre gialla (consigliata)\n☑ Antimalaria (consulta medico)\n⚠️ Alta quota: Cusco a 3400m – portare Diamox'},
+    {id:2, title:'Valuta', color:'#F59E0B', text:'Valuta locale: Sol Peruviano (PEN)\n1€ ≈ 4,0 PEN\nPrelevare in aeroporto Lima/Cusco (banche ufficiali)\nSempre avere contanti per ingressi locali'},
+    {id:3, title:'Contatti Utili', color:'#3B82F6', text:'Emergenze Perù: 105 (polizia)\nAmbascita IT Lima: +51 1 463 2727\nAssicurazione viaggio: inserire numero polizza'},
+    {id:4, title:'Zaino & Bagaglio', color:'#8B5CF6', text:'Volo JetSmart: verificare franchigia\nTrekking: stivali già rodati\nNotti fredde in quota: piumino leggero\nAdattatore universale'},
+  ],
+  nextId: 30,
+};
+
+function saveData() {
+  localStorage.setItem('peru_data', JSON.stringify(data));
+}
+
+// ══════════════════════════════════
+//  TAB NAVIGATION
+// ══════════════════════════════════
+function showTab(name) {
+  document.querySelectorAll('.tab-content').forEach(t => t.classList.remove('active'));
+  document.querySelectorAll('nav button').forEach(b => b.classList.remove('active'));
+  document.getElementById('tab-' + name).classList.add('active');
+  event.target.classList.add('active');
+  renderAll();
+}
+
+// ══════════════════════════════════
+//  HELPERS
+// ══════════════════════════════════
+function fmtDate(str) {
+  if (!str) return '—';
+  const d = new Date(str + 'T00:00:00');
+  return d.toLocaleDateString('it-IT', {day:'2-digit', month:'short'});
+}
+function fmtEur(n) { return '€ ' + Number(n).toLocaleString('it-IT'); }
+function catBadge(cat) {
+  return `<span class="badge badge-${cat.toLowerCase().replace(/\//g,'')}">${cat}</span>`;
+}
+function quandoBadge(q) {
+  let cls = 'quando-loco';
+  if (q==='SUBITO') cls='quando-subito';
+  else if (q.includes('Prima')) cls='quando-prima';
+  else if (q.includes('Online')) cls='quando-online';
+  return `<span class="quando-badge ${cls}">${q}</span>`;
+}
+
+// ══════════════════════════════════
+//  DASHBOARD
+// ══════════════════════════════════
+function renderDashboard() {
+  const total = data.items.reduce((s,i) => s+i.costo, 0);
+  const done = data.items.filter(i=>i.done).length;
+  const pct = Math.round(done/data.items.length*100);
+  const subito = data.items.filter(i=>i.quando==='SUBITO' && !i.done).length;
+  const days = Math.ceil((new Date('2026-07-25') - new Date()) / 86400000);
+
+  document.getElementById('hero-stats').innerHTML = `
+    <div class="stat-card"><div class="val">${pct}%</div><div class="lbl">Completato</div></div>
+    <div class="stat-card"><div class="val">${done}/${data.items.length}</div><div class="lbl">Voci OK</div></div>
+    <div class="stat-card"><div class="val">${subito}</div><div class="lbl">Da fare subito</div></div>
+    <div class="stat-card"><div class="val">${days > 0 ? days : '!'}</div><div class="lbl">${days>0 ? 'Giorni alla partenza' : 'In viaggio!'}</div></div>
+    <div class="stat-card"><div class="val">${fmtEur(total)}</div><div class="lbl">Budget totale/pers.</div></div>
+  `;
+
+  // category progress
+  const cats = {};
+  data.items.forEach(i => {
+    if (!cats[i.cat]) cats[i.cat] = {total:0,done:0};
+    cats[i.cat].total++;
+    if (i.done) cats[i.cat].done++;
+  });
+  let catHtml = '';
+  Object.entries(cats).forEach(([cat,v]) => {
+    const p = Math.round(v.done/v.total*100);
+    const col = CAT_COLORS[cat] || '#999';
+    catHtml += `<div class="cat-bar">
+      <div class="cat-bar-top">
+        <div class="cat-bar-label"><div class="cat-dot" style="background:${col}"></div>${cat}</div>
+        <div class="cat-bar-pct">${v.done}/${v.total} · ${p}%</div>
+      </div>
+      <div class="bar-track"><div class="bar-fill" style="width:${p}%;background:${col}"></div></div>
+    </div>`;
+  });
+  document.getElementById('cat-progress').innerHTML = catHtml;
+
+  // urgent + recent
+  const urgent = data.items.filter(i=>i.quando==='SUBITO' && !i.done);
+  let urgHtml = '<div style="background:#FEF2F2; border:1px solid #FCA5A5; border-radius:12px; padding:20px;">';
+  urgHtml += '<h3 style="font-family:Playfair Display,serif; color:#991B1B; margin-bottom:12px;">🚨 Da Fare Subito</h3>';
+  if (urgent.length === 0) {
+    urgHtml += '<p style="color:#6B7280; font-size:.9rem;">✅ Tutto completato!</p>';
+  } else {
+    urgent.forEach(i => {
+      urgHtml += `<div style="display:flex; align-items:center; gap:10px; padding:8px 0; border-bottom:1px solid #FCA5A5;">
+        <button class="check-btn" onclick="toggleItem(${i.id})">✕</button>
+        <span style="font-size:.9rem; font-weight:500;">${i.voce}</span>
+        <span style="margin-left:auto; font-weight:600; color:#991B1B;">${fmtEur(i.costo)}</span>
+      </div>`;
+    });
+  }
+  urgHtml += '</div>';
+
+  const recent = [...data.items].filter(i=>i.done).slice(-5).reverse();
+  let recHtml = '<div style="background:#F0FDF4; border:1px solid #86EFAC; border-radius:12px; padding:20px;">';
+  recHtml += '<h3 style="font-family:Playfair Display,serif; color:#166534; margin-bottom:12px;">✅ Recentemente Completati</h3>';
+  if (recent.length===0) { recHtml += '<p style="color:#6B7280; font-size:.9rem;">Nessuno ancora.</p>'; }
+  else recent.forEach(i => {
+    recHtml += `<div style="font-size:.88rem; padding:6px 0; border-bottom:1px solid #BBF7D0; display:flex; justify-content:space-between; align-items:center;">
+      <span>✓ ${i.voce}</span><span style="color:#166534; font-weight:600;">${fmtEur(i.costo)}</span>
+    </div>`;
+  });
+  recHtml += '</div>';
+
+  document.getElementById('dashboard-sections').innerHTML = urgHtml + recHtml;
+}
+
+// ══════════════════════════════════
+//  CHECKLIST
+// ══════════════════════════════════
+let activeFilter = 'Tutto';
+
+function renderChecklist() {
+  // filters
+  const cats = ['Tutto', ...new Set(data.items.map(i=>i.cat))];
+  document.getElementById('checklist-filters').innerHTML = cats.map(c =>
+    `<button class="filter-btn ${c===activeFilter?'active':''}" onclick="setFilter('${c}')">${c}</button>`
+  ).join('');
+
+  const sections = [...new Set(data.items.map(i=>i.section))];
+  let html = '';
+  sections.forEach(sec => {
+    let items = data.items.filter(i=>i.section===sec);
+    if (activeFilter !== 'Tutto') items = items.filter(i=>i.cat===activeFilter);
+    if (!items.length) return;
+    const icon = sec.includes('CRITICI')?'🚨':sec.includes('BUROCRAZIA')?'📋':sec.includes('ALLOGGI')?'🏨':sec.includes('TRASPORTI')?'🚌':sec.includes('TOUR')?'🎟️':'🍽️';
+    html += `<div class="section-header">${icon} ${sec}</div>
+    <table class="checklist-table">
+      <thead><tr>
+        <th style="width:40px"></th>
+        <th>Data</th>
+        <th>Categoria</th>
+        <th>Voce / Attività</th>
+        <th>Quando Prenotare</th>
+        <th>Costo (€/pers.)</th>
+        <th>Note</th>
+        <th></th>
+      </tr></thead>
+      <tbody>`;
+    items.forEach(i => {
+      html += `<tr class="${i.done?'done':''}" id="row-${i.id}">
+        <td><button class="check-btn ${i.done?'checked':''}" onclick="toggleItem(${i.id})">${i.done?'✓':''}</button></td>
+        <td class="date-cell">${fmtDate(i.giorno)}</td>
+        <td>${catBadge(i.cat)}</td>
+        <td class="item-name">${i.voce}</td>
+        <td>${quandoBadge(i.quando)}</td>
+        <td class="cost-cell">${i.costo>0?fmtEur(i.costo):'—'}</td>
+        <td class="note-cell">${i.note||'—'}</td>
+        <td><button onclick="deleteItem(${i.id})" style="background:none;border:none;cursor:pointer;color:#ccc;font-size:1rem;" title="Elimina">🗑</button></td>
+      </tr>`;
+    });
+    html += `</tbody></table>`;
+  });
+
+  document.getElementById('checklist-content').innerHTML = html;
+
+  const t = data.items.reduce((s,i)=>s+i.costo,0);
+  document.getElementById('total-val').textContent = fmtEur(t);
+  document.getElementById('total-sub').textContent = `x2 persone = ${fmtEur(t*2)} totale coppia`;
+}
+
+function setFilter(f) { activeFilter=f; renderChecklist(); }
+
+function toggleItem(id) {
+  const item = data.items.find(i=>i.id===id);
+  if (item) { item.done = !item.done; saveData(); renderAll(); }
+}
+
+function deleteItem(id) {
+  if (confirm('Eliminare questa voce?')) {
+    data.items = data.items.filter(i=>i.id!==id);
+    saveData(); renderAll();
+  }
+}
+
+function openAddModal() {
+  document.getElementById('add-modal').classList.add('open');
+}
+
+function saveNewItem() {
+  const voce = document.getElementById('fm-voce').value.trim();
+  if (!voce) return;
+  data.items.push({
+    id: data.nextId++,
+    done: false,
+    section: document.getElementById('fm-sezione').value,
+    giorno: document.getElementById('fm-giorno').value,
+    cat: document.getElementById('fm-cat').value,
+    voce,
+    quando: document.getElementById('fm-quando').value,
+    costo: parseFloat(document.getElementById('fm-costo').value)||0,
+    note: document.getElementById('fm-note').value,
+  });
+  saveData();
+  closeModal('add-modal');
+  renderAll();
+}
+
+// ══════════════════════════════════
+//  ITINERARIO
+// ══════════════════════════════════
+function renderItinerary() {
+  const sorted = [...data.itinerary].sort((a,b)=>a.day-b.day);
+  let html = '';
+  sorted.forEach(day => {
+    html += `<div class="day-card">
+      <div class="day-header" onclick="toggleDay(${day.id})">
+        <div class="day-number">G${day.day}<small>${fmtDate(day.date)}</small></div>
+        <div class="day-info">
+          <h3>${day.title}</h3>
+          <div class="day-tags">
+            <span class="day-tag">📍 ${day.place}</span>
+            ${day.hotel?`<span class="day-tag">🏨 ${day.hotel}</span>`:''}
+            <span class="day-tag">🎯 ${day.activities.length} attività</span>
+          </div>
+        </div>
+        <div class="day-expand" id="expand-${day.id}">▾</div>
+      </div>
+      <div class="day-body" id="body-${day.id}">
+        <div class="day-activities" id="acts-${day.id}">
+          ${day.activities.map(a=>`
+            <div class="activity">
+              <div class="activity-time">${a.time||'—'}</div>
+              <div class="activity-type-icon">${a.type}</div>
+              <div class="activity-content">
+                <div class="activity-title">${a.title}</div>
+                ${a.note?`<div class="activity-note">${a.note}</div>`:''}
+              </div>
+            </div>`).join('')}
+        </div>
+        ${day.notes?`<div style="margin-top:10px; padding:10px 12px; background:#FEF9C3; border-radius:8px; font-size:.83rem; color:#713F12;"><strong>📝 Note:</strong> ${day.notes}</div>`:''}
+        <button class="add-activity-btn" onclick="openActivityModal(${day.id})">+ Aggiungi attività</button>
+        <textarea class="day-notes-input" placeholder="Note per questo giorno..." onchange="saveDayNotes(${day.id}, this.value)">${day.notes||''}</textarea>
+      </div>
+    </div>`;
+  });
+  document.getElementById('itinerary-grid').innerHTML = html;
+}
+
+function toggleDay(id) {
+  const body = document.getElementById('body-'+id);
+  const exp = document.getElementById('expand-'+id);
+  body.classList.toggle('open');
+  exp.classList.toggle('open');
+}
+
+function openActivityModal(dayId) {
+  document.getElementById('activity-day-id').value = dayId;
+  document.getElementById('activity-modal-title').textContent = 'Aggiungi Attività – Giorno ' + (data.itinerary.find(d=>d.id===dayId)||{}).day;
+  document.getElementById('add-activity-modal').classList.add('open');
+}
+
+function saveActivity() {
+  const dayId = parseInt(document.getElementById('activity-day-id').value);
+  const day = data.itinerary.find(d=>d.id===dayId);
+  if (!day) return;
+  const title = document.getElementById('act-title').value.trim();
+  if (!title) return;
+  day.activities.push({
+    time: document.getElementById('act-time').value,
+    type: document.getElementById('act-type').value,
+    title,
+    note: document.getElementById('act-note').value,
+  });
+  day.activities.sort((a,b)=>a.time.localeCompare(b.time));
+  saveData(); closeModal('add-activity-modal'); renderItinerary();
+  setTimeout(()=>{ document.getElementById('body-'+dayId).classList.add('open'); document.getElementById('expand-'+dayId).classList.add('open'); },50);
+}
+
+function saveDayNotes(id, val) {
+  const day = data.itinerary.find(d=>d.id===id);
+  if (day) { day.notes = val; saveData(); }
+}
+
+function openAddDayModal() {
+  document.getElementById('nd-num').value = data.itinerary.length + 1;
+  document.getElementById('add-day-modal').classList.add('open');
+}
+
+function saveNewDay() {
+  const title = document.getElementById('nd-title').value.trim();
+  if (!title) return;
+  data.itinerary.push({
+    id: data.nextId++,
+    date: document.getElementById('nd-date').value,
+    day: parseInt(document.getElementById('nd-num').value)||0,
+    title,
+    place: document.getElementById('nd-place').value,
+    hotel: document.getElementById('nd-hotel').value,
+    notes: '',
+    activities: [],
+  });
+  saveData(); closeModal('add-day-modal'); renderItinerary();
+}
+
+// ══════════════════════════════════
+//  BUDGET
+// ══════════════════════════════════
+function renderBudget() {
+  const byCat = {};
+  data.items.forEach(i => {
+    if (!byCat[i.cat]) byCat[i.cat] = {budget:0, spent:0};
+    byCat[i.cat].budget += i.costo;
+    if (i.done) byCat[i.cat].spent += i.costo;
+  });
+  const total = data.items.reduce((s,i)=>s+i.costo,0);
+  const spent = data.items.filter(i=>i.done).reduce((s,i)=>s+i.costo,0);
+  const remaining = total - spent;
+
+  let catRows = Object.entries(byCat).map(([cat,v]) =>
+    `<tr><td>${catBadge(cat)}</td><td>${fmtEur(v.budget)}</td><td class="green">${fmtEur(v.spent)}</td><td style="color:#9CA3AF;">${fmtEur(v.budget-v.spent)}</td></tr>`
+  ).join('');
+
+  const bySection = {};
+  data.items.forEach(i => {
+    const s = i.section.split(' ')[0]+' '+i.section.split(' ')[1];
+    if (!bySection[s]) bySection[s]=0;
+    bySection[s]+=i.costo;
+  });
+  let secRows = Object.entries(bySection).map(([s,v])=>
+    `<tr><td style="font-size:.82rem;">${s}</td><td>${fmtEur(v)}</td><td>${Math.round(v/total*100)}%</td></tr>`
+  ).join('');
+
+  document.getElementById('budget-grid').innerHTML = `
+    <div class="big-total">
+      <div>
+        <div class="label">Budget Totale (1 persona)</div>
+        <div class="amount">${fmtEur(total)}</div>
+        <div class="sub">x2 = ${fmtEur(total*2)} · Coppia</div>
+      </div>
+      <div style="text-align:right">
+        <div style="font-size:.8rem; color:#aaa; text-transform:uppercase; letter-spacing:.1em; margin-bottom:4px;">Confermato</div>
+        <div style="font-size:1.8rem; font-weight:700; color:#86EFAC;">${fmtEur(spent)}</div>
+        <div style="font-size:.8rem; color:#aaa; margin-top:6px;">Da prenotare: <strong style="color:var(--gold-light)">${fmtEur(remaining)}</strong></div>
+      </div>
+    </div>
+    <div class="budget-card">
+      <h3>📊 Per Categoria</h3>
+      <table class="budget-table">
+        <thead><tr><th>Categoria</th><th>Budget</th><th>Confermato</th><th>Residuo</th></tr></thead>
+        <tbody>${catRows}</tbody>
+      </table>
+    </div>
+    <div class="budget-card">
+      <h3>📋 Per Sezione</h3>
+      <table class="budget-table">
+        <thead><tr><th>Sezione</th><th>Costo</th><th>% sul totale</th></tr></thead>
+        <tbody>${secRows}</tbody>
+      </table>
+    </div>
+  `;
+}
+
+// ══════════════════════════════════
+//  NOTE
+// ══════════════════════════════════
+const NOTE_COLORS = ['#10B981','#3B82F6','#F59E0B','#8B5CF6','#EC4899','#EF4444','#14B8A6'];
+
+function renderNotes() {
+  let html = '';
+  data.notes.forEach(n => {
+    html += `<div class="note-card">
+      <div class="note-card-header" style="background:${n.color}"></div>
+      <button class="note-delete" onclick="deleteNote(${n.id})">✕</button>
+      <div class="note-card-body">
+        <h4>${n.title}</h4>
+        <textarea oninput="saveNote(${n.id}, this.value)">${n.text}</textarea>
+      </div>
+    </div>`;
+  });
+  html += `<div class="add-note-btn" onclick="addNote()">+</div>`;
+  document.getElementById('notes-grid').innerHTML = html;
+}
+
+function saveNote(id, val) {
+  const n = data.notes.find(x=>x.id===id);
+  if (n) { n.text=val; saveData(); }
+}
+
+function deleteNote(id) {
+  data.notes = data.notes.filter(n=>n.id!==id);
+  saveData(); renderNotes();
+}
+
+function addNote() {
+  data.notes.push({id:data.nextId++, title:'Nuova nota', color: NOTE_COLORS[data.notes.length%NOTE_COLORS.length], text:''});
+  saveData(); renderNotes();
+}
+
+// ══════════════════════════════════
+//  MODAL CLOSE
+// ══════════════════════════════════
+function closeModal(id) {
+  document.getElementById(id).classList.remove('open');
+}
+document.querySelectorAll('.modal-overlay').forEach(m => {
+  m.addEventListener('click', e => { if(e.target===m) m.classList.remove('open'); });
+});
+
+// ══════════════════════════════════
+//  RENDER ALL
+// ══════════════════════════════════
+function renderAll() {
+  renderDashboard();
+  renderChecklist();
+  renderItinerary();
+  renderBudget();
+  renderNotes();
+}
+
+renderAll();
+</script>
+</body>
+</html>
