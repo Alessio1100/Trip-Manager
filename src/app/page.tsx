@@ -371,7 +371,7 @@ export default function App() {
             <div key={day.id} style={{margin:'0 16px 10px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
               <div style={{display:'flex',alignItems:'stretch',cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
                 <div style={{background:'#1A1208',color:'#E8B84B',fontFamily:"'Playfair Display',serif",fontSize:'1.05rem',fontWeight:700,padding:'13px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:54,lineHeight:1,gap:2}}>
-                  G{day.day}<small style={{fontFamily:"'DM Sans',sans-serif",fontSize:'.58rem',color:'#aaa',fontWeight:400,textTransform:'uppercase'}}>{fmtDate(day.date)}</small>
+		{fmtDate(day.date)}<small style={{fontFamily:"'DM Sans',sans-serif",fontSize:'.58rem',color:'#aaa',fontWeight:400,textTransform:'uppercase'}}>G{day.day}</small>
                 </div>
                 <div style={{flex:1,padding:'12px 10px',minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:6}}>
