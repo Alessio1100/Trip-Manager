@@ -5,10 +5,9 @@ import {
   Plane, Hotel, Bus, Car, Ticket, FileText, Heart, Utensils, MoreHorizontal,
   AlertCircle, Clipboard, Bed, Navigation, Star, Coffee,
   ChevronDown, Plus, Pencil, Trash2, RefreshCw, ArrowUp,
-  MapPin, Clock
+  MapPin, Clock, ChevronRight
 } from 'lucide-react'
 
-/* ── TYPES ── */
 type Item = { id:number; done:boolean; section:string; giorno:string; cat:string; voce:string; quando:string; costo:number; note:string; cancGratuita:boolean; cancScadenza:string }
 type Activity = { time:string; type:string; title:string; note:string }
 type Day = { id:number; date:string; day:number; title:string; place:string; hotel:string; notes:string; activities:Activity[] }
@@ -22,28 +21,31 @@ const CATS = ['Voli','Hotel','Bus','Trasporti','Tour','Ingressi','Documenti','Sa
 const QUANDO_OPTS = ['SUBITO','Prima di partire','Online','In loco','In loco/Online','In loco/Tour','Online/Agenzia']
 const ACT_TYPES = ['👣 Visita','🍽 Pasto','🚌 Trasporto','🛏 Alloggio','🎫 Ingresso','🥾 Trek','📷 Foto','✈️ Volo','🚂 Treno','💤 Riposo']
 
-const SectionIcon = ({sec}:{sec:string}) => {
-  const p = {size:13,strokeWidth:2}
+const TRIP_START = '2026-07-25'
+const TRIP_END   = '2026-08-06'
+
+const SectionIcon = ({sec,size=13}:{sec:string,size?:number}) => {
+  const p = {size,strokeWidth:2}
   if(sec==='PUNTI CRITICI') return <AlertCircle {...p} color="#991B1B"/>
-  if(sec==='BUROCRAZIA') return <Clipboard {...p} color="#92400E"/>
-  if(sec==='ALLOGGI') return <Bed {...p} color="#9D174D"/>
-  if(sec==='TRASPORTI') return <Navigation {...p} color="#92400E"/>
-  if(sec==='TOUR') return <Ticket {...p} color="#5B21B6"/>
+  if(sec==='BUROCRAZIA')    return <Clipboard {...p} color="#92400E"/>
+  if(sec==='ALLOGGI')       return <Bed {...p} color="#9D174D"/>
+  if(sec==='TRASPORTI')     return <Navigation {...p} color="#92400E"/>
+  if(sec==='TOUR')          return <Ticket {...p} color="#5B21B6"/>
   return <Coffee {...p} color="#9A3412"/>
 }
 
 const CatIcon = ({cat}:{cat:string}) => {
   const p = {size:11,strokeWidth:2}
-  if(cat==='Voli') return <Plane {...p}/>
-  if(cat==='Hotel') return <Hotel {...p}/>
-  if(cat==='Bus') return <Bus {...p}/>
+  if(cat==='Voli')      return <Plane {...p}/>
+  if(cat==='Hotel')     return <Hotel {...p}/>
+  if(cat==='Bus')       return <Bus {...p}/>
   if(cat==='Trasporti') return <Car {...p}/>
-  if(cat==='Tour') return <Star {...p}/>
-  if(cat==='Ingressi') return <Ticket {...p}/>
+  if(cat==='Tour')      return <Star {...p}/>
+  if(cat==='Ingressi')  return <Ticket {...p}/>
   if(cat==='Documenti') return <FileText {...p}/>
-  if(cat==='Salute') return <Heart {...p}/>
-  if(cat==='Homestay') return <Home {...p}/>
-  if(cat==='Cibo') return <Utensils {...p}/>
+  if(cat==='Salute')    return <Heart {...p}/>
+  if(cat==='Homestay')  return <Home {...p}/>
+  if(cat==='Cibo')      return <Utensils {...p}/>
   return <MoreHorizontal {...p}/>
 }
 
@@ -69,11 +71,10 @@ function CancBadge({item}:{item:Item}){
   if(!item.cancGratuita) return null
   if(!item.cancScadenza) return <span style={{background:'#DCFCE7',color:'#166534',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Canc. gratuita</span>
   const oggi=new Date(); oggi.setHours(0,0,0,0)
-  const scad=new Date(item.cancScadenza+'T00:00:00')
-  const diff=Math.ceil((scad.getTime()-oggi.getTime())/86400000)
+  const diff=Math.ceil((new Date(item.cancScadenza+'T00:00:00').getTime()-oggi.getTime())/86400000)
   if(diff<0) return <span style={{background:'#FEE2E2',color:'#991B1B',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Scaduta {fmtDate(item.cancScadenza)}</span>
   if(diff<=7) return <span style={{background:'#FEF9C3',color:'#713F12',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Scade tra {diff}g</span>
-  return <span style={{background:'#DCFCE7',color:'#166634',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Canc. fino al {fmtDate(item.cancScadenza)}</span>
+  return <span style={{background:'#DCFCE7',color:'#166534',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Canc. fino al {fmtDate(item.cancScadenza)}</span>
 }
 
 function Modal({title,children,onClose}:{title:string,children:React.ReactNode,onClose:()=>void}){
@@ -184,107 +185,219 @@ export default function App() {
   const deleteNote = (id:number) => { if(!confirm('Eliminare?')) return; save({...data, notes: data.notes.filter(n=>n.id!==id)}) }
   const addNote = () => save({...data, notes:[...data.notes,{id:data.nextId,title:'Nuova nota',color:NOTE_COLORS[data.notes.length%NOTE_COLORS.length],text:''}], nextId:data.nextId+1})
 
-  const total = data.items.reduce((s,i)=>s+i.costo,0)
-  const doneCount = data.items.filter(i=>i.done).length
-  const pct = Math.round(doneCount/data.items.length*100)
-  const subito = data.items.filter(i=>i.quando==='SUBITO'&&!i.done).length
-  const days = Math.ceil((new Date('2026-07-25').getTime()-new Date().getTime())/86400000)
-  const spent = data.items.filter(i=>i.done).reduce((s,i)=>s+i.costo,0)
+  /* ── COMPUTED ── */
+  const total  = data.items.reduce((s,i)=>s+i.costo,0)
+  const spent  = data.items.filter(i=>i.done).reduce((s,i)=>s+i.costo,0)
   const pagato = data.items.filter(i=>i.done&&!i.cancGratuita).reduce((s,i)=>s+i.costo,0)
   const cancConf = data.items.filter(i=>i.done&&i.cancGratuita).reduce((s,i)=>s+i.costo,0)
+  const doneCount = data.items.filter(i=>i.done).length
+
+  const oggi = new Date(); oggi.setHours(0,0,0,0)
+  const startDate = new Date(TRIP_START+'T00:00:00')
+  const endDate   = new Date(TRIP_END+'T00:00:00')
+  const daysToGo  = Math.ceil((startDate.getTime()-oggi.getTime())/86400000)
+  const inViaggio = oggi>=startDate && oggi<=endDate
+  const finito    = oggi>endDate
+
+  // Prossimo alloggio: prima voce ALLOGGI non fatta con data >= oggi
+  const prossimoAlloggio = [...data.items]
+    .filter(i=>i.section==='ALLOGGI' && !i.done && i.giorno)
+    .sort((a,b)=>a.giorno.localeCompare(b.giorno))[0]
+
+  // Prossimo giorno itinerario
+  const prossimoGiorno = [...data.itinerary]
+    .sort((a,b)=>a.day-b.day)
+    .find(d => !d.date || new Date(d.date+'T00:00:00') >= oggi)
+    || [...data.itinerary].sort((a,b)=>a.day-b.day)[0]
+
+  // Recap da prenotare per sezione (escluso QUOTIDIANO)
+  const daFare = SECTIONS.filter(s=>s!=='QUOTIDIANO').map(sec=>{
+    const mancanti = data.items.filter(i=>i.section===sec && !i.done)
+    return {sec, count: mancanti.length}
+  }).filter(x=>x.count>0)
 
   const S = {
-    page: {height:'calc(100dvh - 62px - env(safe-area-inset-bottom,0px))',overflowY:'auto' as const,WebkitOverflowScrolling:'touch' as const},
-    hdr: {background:'#1A1208',color:'#fff',padding:'14px 16px',position:'sticky' as const,top:0,zIndex:50},
-    hdrT: {fontFamily:"'Playfair Display',serif",fontSize:'1.2rem',color:'#E8B84B'},
-    hdrS: {fontSize:'.74rem',color:'#aaa',marginTop:2},
-    card: {margin:'0 16px 8px',background:'#fff',borderRadius:12,border:'1px solid #D4C4A0',overflow:'hidden'},
-    btn: {flex:1,background:'#1A1208',border:'none',borderRadius:12,padding:14,fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:700,color:'#E8B84B',cursor:'pointer'} as React.CSSProperties,
-    btnC: {flex:1,background:'#F0E8D0',border:'1.5px solid #D4C4A0',borderRadius:12,padding:14,fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:600,color:'#7A6845',cursor:'pointer'} as React.CSSProperties,
-    iBtn: {border:'none',background:'#F0E8D0',borderRadius:8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'} as React.CSSProperties,
+    page:  {height:'calc(100dvh - 62px - env(safe-area-inset-bottom,0px))',overflowY:'auto' as const,WebkitOverflowScrolling:'touch' as const},
+    hdr:   {background:'#1A1208',color:'#fff',padding:'14px 16px',position:'sticky' as const,top:0,zIndex:50},
+    hdrT:  {fontFamily:"'Playfair Display',serif",fontSize:'1.2rem',color:'#E8B84B'},
+    hdrS:  {fontSize:'.74rem',color:'#aaa',marginTop:2},
+    card:  {margin:'0 16px 8px',background:'#fff',borderRadius:12,border:'1px solid #D4C4A0',overflow:'hidden'},
+    btn:   {flex:1,background:'#1A1208',border:'none',borderRadius:12,padding:14,fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:700,color:'#E8B84B',cursor:'pointer'} as React.CSSProperties,
+    btnC:  {flex:1,background:'#F0E8D0',border:'1.5px solid #D4C4A0',borderRadius:12,padding:14,fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:600,color:'#7A6845',cursor:'pointer'} as React.CSSProperties,
+    iBtn:  {border:'none',background:'#F0E8D0',borderRadius:8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'} as React.CSSProperties,
   }
 
   const navItems = [
-    {id:'dashboard', icon:<Home size={20} strokeWidth={page==='dashboard'?2.5:1.5}/>, lbl:'Home'},
-    {id:'checklist', icon:<CheckSquare size={20} strokeWidth={page==='checklist'?2.5:1.5}/>, lbl:'Lista'},
-    {id:'itinerario', icon:<Calendar size={20} strokeWidth={page==='itinerario'?2.5:1.5}/>, lbl:'Giorni'},
-    {id:'budget', icon:<Wallet size={20} strokeWidth={page==='budget'?2.5:1.5}/>, lbl:'Budget'},
-    {id:'note', icon:<StickyNote size={20} strokeWidth={page==='note'?2.5:1.5}/>, lbl:'Note'},
-  ] as const
+    {id:'dashboard'  as const, icon:<Home        size={20} strokeWidth={page==='dashboard'  ?2.5:1.5}/>, lbl:'Home'},
+    {id:'checklist'  as const, icon:<CheckSquare size={20} strokeWidth={page==='checklist'  ?2.5:1.5}/>, lbl:'Lista'},
+    {id:'itinerario' as const, icon:<Calendar    size={20} strokeWidth={page==='itinerario' ?2.5:1.5}/>, lbl:'Giorni'},
+    {id:'budget'     as const, icon:<Wallet      size={20} strokeWidth={page==='budget'     ?2.5:1.5}/>, lbl:'Budget'},
+    {id:'note'       as const, icon:<StickyNote  size={20} strokeWidth={page==='note'       ?2.5:1.5}/>, lbl:'Note'},
+  ]
+
+  const goToChecklist = (cat?:string) => {
+    if(cat) setFilter(cat)
+    setPage('checklist')
+  }
 
   return (
     <div style={{fontFamily:"'DM Sans',sans-serif",background:'#FAF6EE',color:'#2C2012',maxWidth:600,margin:'0 auto'}}>
       {syncing && <div style={{position:'fixed',top:0,left:0,right:0,height:3,background:'#E8B84B',zIndex:999}}/>}
 
-      {/* ══ DASHBOARD ══ */}
+      {/* ══════════════════════════════
+          DASHBOARD
+      ══════════════════════════════ */}
       {page==='dashboard'&&(
         <div style={S.page}>
+          {/* Header */}
           <div style={S.hdr}>
-            <div style={S.hdrT}>🦙 Perù 2026</div>
-            <div style={{...S.hdrS,display:'flex',justifyContent:'space-between'}}>
-              <span>25 lug – 6 ago · 13 notti · 2 persone</span>
-              <span style={{display:'flex',alignItems:'center',gap:4,color:syncing?'#E8B84B':'#555'}}>
-                {syncing?<><ArrowUp size={10}/>salvataggio…</>:<><RefreshCw size={10}/>{lastSync}</>}
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
+              <div style={S.hdrT}>🦙 Perù 2026</div>
+              <span style={{display:'flex',alignItems:'center',gap:4,fontSize:'.72rem',color:syncing?'#E8B84B':'#555',marginTop:3}}>
+                {syncing?<><ArrowUp size={10}/>sync…</>:<><RefreshCw size={10}/>{lastSync}</>}
               </span>
             </div>
+            <div style={S.hdrS}>25 lug – 6 ago · 13 notti · 2 persone</div>
           </div>
-          <div style={{display:'flex',gap:10,padding:'14px 16px',overflowX:'auto',scrollbarWidth:'none'}}>
-            {[
-              {val:days>0?days:'✈',lbl:days>0?'Giorni':'Partito!',hi:true},
-              {val:`${pct}%`,lbl:'Fatto'},
-              {val:`${doneCount}/${data.items.length}`,lbl:'Voci ok'},
-              {val:subito,lbl:'Urgenti',warn:subito>0},
-              {val:fmtEur(total),lbl:'/persona',small:true},
-            ].map((st,i)=>(
-              <div key={i} style={{flexShrink:0,background:'#fff',border:'1px solid #D4C4A0',borderRadius:12,padding:'12px 14px',textAlign:'center',minWidth:80}}>
-                <div style={{fontSize:st.small?'1rem':'1.4rem',fontWeight:700,color:st.hi?'#C9992A':st.warn?'#991B1B':'#1A1208',lineHeight:1}}>{st.val}</div>
-                <div style={{fontSize:'.62rem',color:'#7A6845',textTransform:'uppercase',letterSpacing:'.06em',marginTop:3}}>{st.lbl}</div>
+
+          {/* ── COUNTDOWN HERO ── */}
+          <div style={{margin:'16px 16px 12px',background:'linear-gradient(135deg,#1A1208,#2A1A08)',borderRadius:16,padding:'24px 22px',color:'#fff',position:'relative',overflow:'hidden'}}>
+            <div style={{position:'absolute',top:-30,right:-30,width:120,height:120,borderRadius:'50%',background:'rgba(201,153,42,.12)'}}/>
+            {finito ? (
+              <div>
+                <div style={{fontFamily:"'Playfair Display',serif",fontSize:'2rem',fontWeight:700,color:'#E8B84B'}}>Viaggio terminato</div>
+                <div style={{fontSize:'.85rem',color:'#aaa',marginTop:4}}>Speriamo sia andato bene! 🦙</div>
               </div>
-            ))}
+            ) : inViaggio ? (
+              <div>
+                <div style={{fontSize:'.7rem',color:'#aaa',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:6}}>Sei in viaggio!</div>
+                <div style={{fontFamily:"'Playfair Display',serif",fontSize:'2rem',fontWeight:700,color:'#E8B84B'}}>Buon Perù! ✈️</div>
+                <div style={{fontSize:'.82rem',color:'#ccc',marginTop:4}}>Finisce il {fmtDate(TRIP_END)}</div>
+              </div>
+            ) : (
+              <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between'}}>
+                <div>
+                  <div style={{fontSize:'.7rem',color:'#aaa',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:4}}>Alla partenza</div>
+                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:'3.2rem',fontWeight:700,color:'#E8B84B',lineHeight:1}}>{daysToGo}</div>
+                  <div style={{fontSize:'.85rem',color:'#ccc',marginTop:4}}>giorni · {fmtDate(TRIP_START)}</div>
+                </div>
+                <div style={{textAlign:'right'}}>
+                  <div style={{fontSize:'.7rem',color:'#aaa',marginBottom:4}}>Checklist</div>
+                  <div style={{fontSize:'1.3rem',fontWeight:700,color:'#fff'}}>{doneCount}<span style={{fontSize:'.8rem',color:'#888',fontWeight:400}}>/{data.items.length}</span></div>
+                  <div style={{fontSize:'.7rem',color:'#aaa',marginTop:2}}>{Math.round(doneCount/data.items.length*100)}% fatto</div>
+                </div>
+              </div>
+            )}
           </div>
-          <div style={{padding:'0 16px 16px'}}>
-            <div style={{fontSize:'.68rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',padding:'14px 0 8px'}}>Avanzamento per categoria</div>
-            {Object.entries(data.items.reduce((acc,i)=>{ if(!acc[i.cat]) acc[i.cat]={t:0,d:0}; acc[i.cat].t++; if(i.done) acc[i.cat].d++; return acc },{} as Record<string,{t:number,d:number}>)).map(([cat,v])=>{
-              const p=Math.round(v.d/v.t*100),col=CAT_COLORS[cat]||'#999'
-              return (
-                <div key={cat} style={{display:'flex',alignItems:'center',gap:8,padding:'5px 0'}}>
-                  <div style={{width:8,height:8,borderRadius:'50%',background:col,flexShrink:0}}/>
-                  <div style={{fontSize:'.8rem',fontWeight:500,flex:1}}>{cat}</div>
-                  <div style={{flex:2,background:'#F0E8D0',borderRadius:99,height:5}}>
-                    <div style={{height:5,borderRadius:99,background:col,width:`${p}%`,transition:'width .5s'}}/>
+
+          {/* ── BUDGET BAR ── */}
+          <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',padding:'14px 16px'}}>
+            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
+              <div style={{fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',gap:5}}>
+                <Wallet size={13} color="#7A6845"/>Budget
+              </div>
+              <button onClick={()=>setPage('budget')} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:'#C9992A',fontSize:'.75rem',fontWeight:600}}>
+                Dettagli<ChevronRight size={13}/>
+              </button>
+            </div>
+            {/* barra */}
+            <div style={{background:'#F0E8D0',borderRadius:99,height:8,overflow:'hidden',marginBottom:10}}>
+              <div style={{display:'flex',height:8,borderRadius:99,overflow:'hidden'}}>
+                <div style={{width:`${pagato/total*100}%`,background:'#22C55E',transition:'width .6s'}}/>
+                <div style={{width:`${cancConf/total*100}%`,background:'#EAB308',transition:'width .6s'}}/>
+              </div>
+            </div>
+            <div style={{display:'flex',justifyContent:'space-between',fontSize:'.78rem'}}>
+              <div style={{display:'flex',gap:12}}>
+                <span style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:8,height:8,borderRadius:2,background:'#22C55E'}}/><span style={{color:'#555'}}>Pagato <strong>{fmtEur(pagato)}</strong></span></span>
+                {cancConf>0&&<span style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:8,height:8,borderRadius:2,background:'#EAB308'}}/><span style={{color:'#555'}}>Canc. <strong>{fmtEur(cancConf)}</strong></span></span>}
+              </div>
+              <span style={{color:'#7A6845',fontWeight:600}}>{fmtEur(total)}</span>
+            </div>
+          </div>
+
+          {/* ── DA PRENOTARE ── */}
+          {daFare.length > 0 && (
+            <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
+              <div style={{padding:'12px 16px 10px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'1px solid #F0E8D0'}}>
+                <div style={{fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',gap:5}}>
+                  <CheckSquare size={13} color="#7A6845"/>Da prenotare
+                </div>
+                <button onClick={()=>goToChecklist()} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:'#C9992A',fontSize:'.75rem',fontWeight:600}}>
+                  Vedi tutto<ChevronRight size={13}/>
+                </button>
+              </div>
+              {daFare.map(({sec,count})=>(
+                <button key={sec} onClick={()=>goToChecklist()} style={{width:'100%',background:'none',border:'none',borderBottom:'1px solid #F0E8D0',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left'}}>
+                  <SectionIcon sec={sec} size={14}/>
+                  <div style={{flex:1,fontSize:'.86rem',fontWeight:500,color:'#2C2012'}}>{sec.charAt(0)+sec.slice(1).toLowerCase()}</div>
+                  <div style={{background:'#FEF3C7',color:'#92400E',borderRadius:99,padding:'2px 9px',fontSize:'.75rem',fontWeight:700}}>{count}</div>
+                  <ChevronRight size={14} color="#ccc"/>
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* ── PROSSIMO ALLOGGIO ── */}
+          {prossimoAlloggio && (
+            <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
+              <div style={{padding:'12px 16px 10px',fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',gap:5,borderBottom:'1px solid #F0E8D0'}}>
+                <Bed size={13} color="#9D174D"/>Prossimo alloggio
+              </div>
+              <div style={{padding:'12px 16px'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <div style={{flex:1}}>
+                    <div style={{fontSize:'.9rem',fontWeight:700}}>{prossimoAlloggio.voce}</div>
+                    <div style={{fontSize:'.78rem',color:'#7A6845',marginTop:3,display:'flex',alignItems:'center',gap:4}}>
+                      <Clock size={11}/>{fmtDate(prossimoAlloggio.giorno)}
+                      {prossimoAlloggio.costo>0&&<span style={{marginLeft:4,color:'#3D5A2E',fontWeight:600}}>{fmtEur(prossimoAlloggio.costo)}</span>}
+                    </div>
                   </div>
-                  <div style={{fontSize:'.72rem',color:'#7A6845',minWidth:30,textAlign:'right'}}>{p}%</div>
+                  {prossimoAlloggio.cancGratuita&&<CancBadge item={prossimoAlloggio}/>}
                 </div>
-              )
-            })}
-          </div>
-          <div style={{margin:'0 16px 12px',borderRadius:14,overflow:'hidden',border:'1px solid #D4C4A0'}}>
-            <div style={{padding:'10px 14px',fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',background:'#FEE2E2',color:'#991B1B',display:'flex',alignItems:'center',gap:6}}><AlertCircle size={13}/>Da fare subito</div>
-            {data.items.filter(i=>i.quando==='SUBITO'&&!i.done).length===0
-              ?<div style={{padding:'11px 14px',background:'#fff',fontSize:'.86rem',color:'#3D5A2E'}}>✓ Tutto completato!</div>
-              :data.items.filter(i=>i.quando==='SUBITO'&&!i.done).map(i=>(
-                <div key={i.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',background:'#fff',borderTop:'1px solid #f0e8d0'}}>
-                  <button onClick={()=>toggleItem(i.id)} style={{width:28,height:28,borderRadius:8,border:'2px solid #D4C4A0',background:'#fff',cursor:'pointer',flexShrink:0}}/>
-                  <div style={{flex:1,fontSize:'.86rem',fontWeight:500}}>{i.voce}</div>
-                  <div style={{fontSize:'.83rem',fontWeight:700,color:'#991B1B'}}>{fmtEur(i.costo)}</div>
-                </div>
-              ))
-            }
-          </div>
-          <div style={{margin:'0 16px 16px',borderRadius:14,overflow:'hidden',border:'1px solid #D4C4A0'}}>
-            <div style={{padding:'10px 14px',fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',background:'#DCFCE7',color:'#166534',display:'flex',alignItems:'center',gap:6}}><CheckSquare size={13}/>Confermati recenti</div>
-            {[...data.items].filter(i=>i.done).slice(-4).reverse().map(i=>(
-              <div key={i.id} style={{display:'flex',alignItems:'center',gap:10,padding:'11px 14px',background:'#fff',borderTop:'1px solid #f0e8d0'}}>
-                <CheckSquare size={14} color="#3D5A2E"/>
-                <div style={{flex:1,fontSize:'.86rem',fontWeight:500}}>{i.voce}</div>
-                <div style={{fontSize:'.83rem',fontWeight:700,color:'#3D5A2E'}}>{fmtEur(i.costo)}</div>
+                {prossimoAlloggio.note&&<div style={{fontSize:'.76rem',color:'#7A6845',fontStyle:'italic',marginTop:6}}>{prossimoAlloggio.note}</div>}
               </div>
-            ))}
-          </div>
+            </div>
+          )}
+
+          {/* ── PROSSIMO GIORNO ITINERARIO ── */}
+          {prossimoGiorno && (
+            <div style={{margin:'0 16px 16px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
+              <div style={{padding:'12px 16px 10px',fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid #F0E8D0'}}>
+                <div style={{display:'flex',alignItems:'center',gap:5}}><Calendar size={13} color="#7A6845"/>Prossimo giorno</div>
+                <button onClick={()=>setPage('itinerario')} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:'#C9992A',fontSize:'.75rem',fontWeight:600}}>
+                  Itinerario<ChevronRight size={13}/>
+                </button>
+              </div>
+              <div style={{padding:'12px 16px 8px'}}>
+                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
+                  <div style={{background:'#1A1208',color:'#E8B84B',borderRadius:8,padding:'4px 10px',fontFamily:"'Playfair Display',serif",fontSize:'.9rem',fontWeight:700,lineHeight:1,textAlign:'center'}}>
+                    {fmtDate(prossimoGiorno.date)}<br/><small style={{fontFamily:"'DM Sans',sans-serif",fontSize:'.55rem',color:'#aaa',fontWeight:400}}>G{prossimoGiorno.day}</small>
+                  </div>
+                  <div>
+                    <div style={{fontSize:'.9rem',fontWeight:700}}>{prossimoGiorno.title}</div>
+                    <div style={{fontSize:'.75rem',color:'#7A6845',display:'flex',alignItems:'center',gap:3,marginTop:2}}><MapPin size={10}/>{prossimoGiorno.place}</div>
+                  </div>
+                </div>
+                {prossimoGiorno.activities.slice(0,3).map((a,i)=>(
+                  <div key={i} style={{display:'flex',gap:8,padding:'5px 0',borderTop:'1px solid #F0E8D0',alignItems:'flex-start'}}>
+                    <div style={{fontSize:'.7rem',fontWeight:700,color:'#C9992A',minWidth:38,display:'flex',alignItems:'center',gap:2,paddingTop:1}}><Clock size={9}/>{a.time}</div>
+                    <div style={{fontSize:'.88rem'}}>{a.type}</div>
+                    <div style={{fontSize:'.82rem',fontWeight:500,flex:1}}>{a.title}</div>
+                  </div>
+                ))}
+                {prossimoGiorno.activities.length>3&&<div style={{fontSize:'.72rem',color:'#aaa',paddingTop:6,textAlign:'center'}}>+{prossimoGiorno.activities.length-3} altre attività</div>}
+              </div>
+            </div>
+          )}
+
+          <div style={{height:16}}/>
         </div>
       )}
 
-      {/* ══ CHECKLIST ══ */}
+      {/* ══════════════════════════════
+          CHECKLIST
+      ══════════════════════════════ */}
       {page==='checklist'&&(
         <div style={S.page}>
           <div style={S.hdr}>
@@ -348,7 +461,9 @@ export default function App() {
         </div>
       )}
 
-      {/* ══ ITINERARIO ══ */}
+      {/* ══════════════════════════════
+          ITINERARIO
+      ══════════════════════════════ */}
       {page==='itinerario'&&(
         <div style={S.page}>
           <div style={S.hdr}>
@@ -367,9 +482,7 @@ export default function App() {
                 <div style={{flex:1,padding:'12px 10px',minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:6}}>
                     <div style={{fontSize:'.9rem',fontWeight:700,lineHeight:1.3,flex:1}}>{day.title}</div>
-                    <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',display:'flex',alignItems:'center'}}>
-                      <Trash2 size={13} color="#ccc"/>
-                    </button>
+                    <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',display:'flex',alignItems:'center'}}><Trash2 size={13} color="#ccc"/></button>
                   </div>
                   <div style={{fontSize:'.73rem',color:'#7A6845',marginTop:3,display:'flex',gap:8,flexWrap:'wrap'}}>
                     <span style={{display:'flex',alignItems:'center',gap:3}}><MapPin size={10}/>{day.place}</span>
@@ -390,9 +503,7 @@ export default function App() {
                         <div style={{fontSize:'.84rem',fontWeight:600,lineHeight:1.3}}>{a.title}</div>
                         {a.note&&<div style={{fontSize:'.74rem',color:'#7A6845',marginTop:1}}>{a.note}</div>}
                       </div>
-                      <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',flexShrink:0,display:'flex',alignItems:'center',paddingTop:4}}>
-                        <Trash2 size={13} color="#ccc"/>
-                      </button>
+                      <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',flexShrink:0,display:'flex',alignItems:'center',paddingTop:4}}><Trash2 size={13} color="#ccc"/></button>
                     </div>
                   ))}
                   {day.notes&&<div style={{background:'#FFFBEB',padding:'9px 14px',fontSize:'.78rem',color:'#92400E',borderTop:'1px solid #F0E8D0'}}>📝 {day.notes}</div>}
@@ -407,11 +518,13 @@ export default function App() {
         </div>
       )}
 
-      {/* ══ BUDGET ══ */}
+      {/* ══════════════════════════════
+          BUDGET
+      ══════════════════════════════ */}
       {page==='budget'&&(
         <div style={S.page}>
           <div style={S.hdr}><div style={S.hdrT}>Budget</div></div>
-          <div style={{margin:'14px 16px',background:'linear-gradient(135deg, #1A1208, #2A1A08)',borderRadius:16,padding:20,color:'#fff'}}>
+          <div style={{margin:'14px 16px',background:'linear-gradient(135deg,#1A1208,#2A1A08)',borderRadius:16,padding:20,color:'#fff'}}>
             <div style={{fontSize:'.7rem',color:'#aaa',textTransform:'uppercase',letterSpacing:'.07em',marginBottom:4}}>Budget totale / persona</div>
             <div style={{fontFamily:"'Playfair Display',serif",fontSize:'2.1rem',fontWeight:700,color:'#E8B84B',lineHeight:1}}>{fmtEur(total)}</div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 8px',marginTop:14}}>
@@ -430,23 +543,23 @@ export default function App() {
             </div>
           </div>
           {(()=>{
-            const byCat:{[k:string]:{b:number,pagato:number,canc:number}}={}
-            data.items.forEach(i=>{ if(!byCat[i.cat]) byCat[i.cat]={b:0,pagato:0,canc:0}; byCat[i.cat].b+=i.costo; if(i.done&&!i.cancGratuita) byCat[i.cat].pagato+=i.costo; if(i.done&&i.cancGratuita) byCat[i.cat].canc+=i.costo })
+            const byCat:{[k:string]:{b:number,p:number,c:number}}={}
+            data.items.forEach(i=>{ if(!byCat[i.cat]) byCat[i.cat]={b:0,p:0,c:0}; byCat[i.cat].b+=i.costo; if(i.done&&!i.cancGratuita) byCat[i.cat].p+=i.costo; if(i.done&&i.cancGratuita) byCat[i.cat].c+=i.costo })
             return (
               <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
                 <div style={{padding:'11px 14px 9px',fontSize:'.72rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',borderBottom:'1px solid #F0E8D0'}}>Per categoria</div>
                 {Object.entries(byCat).map(([cat,v])=>(
                   <div key={cat} style={{padding:'10px 14px',borderBottom:'1px solid #F0E8D0'}}>
-                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:v.pagato>0||v.canc>0?5:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:v.p>0||v.c>0?5:0}}>
                       <div style={{width:8,height:8,borderRadius:'50%',background:CAT_COLORS[cat]||'#999',flexShrink:0}}/>
                       <div style={{fontSize:'.84rem',fontWeight:600,flex:1}}>{cat}</div>
                       <div style={{fontSize:'.86rem',fontWeight:700}}>{fmtEur(v.b)}</div>
                       <div style={{fontSize:'.7rem',color:'#7A6845',background:'#F0E8D0',padding:'2px 7px',borderRadius:99}}>{Math.round(v.b/total*100)}%</div>
                     </div>
-                    {(v.pagato>0||v.canc>0)&&(
+                    {(v.p>0||v.c>0)&&(
                       <div style={{display:'flex',gap:6,paddingLeft:18,flexWrap:'wrap'}}>
-                        {v.pagato>0&&<span style={{fontSize:'.7rem',background:'#DCFCE7',color:'#166534',padding:'2px 8px',borderRadius:99,display:'flex',alignItems:'center',gap:3}}><CheckSquare size={9}/>pagato {fmtEur(v.pagato)}</span>}
-                        {v.canc>0&&<span style={{fontSize:'.7rem',background:'#FEF9C3',color:'#713F12',padding:'2px 8px',borderRadius:99}}>canc. {fmtEur(v.canc)}</span>}
+                        {v.p>0&&<span style={{fontSize:'.7rem',background:'#DCFCE7',color:'#166534',padding:'2px 8px',borderRadius:99,display:'flex',alignItems:'center',gap:3}}><CheckSquare size={9}/>pagato {fmtEur(v.p)}</span>}
+                        {v.c>0&&<span style={{fontSize:'.7rem',background:'#FEF9C3',color:'#713F12',padding:'2px 8px',borderRadius:99}}>canc. {fmtEur(v.c)}</span>}
                       </div>
                     )}
                   </div>
@@ -458,7 +571,9 @@ export default function App() {
         </div>
       )}
 
-      {/* ══ NOTE ══ */}
+      {/* ══════════════════════════════
+          NOTE
+      ══════════════════════════════ */}
       {page==='note'&&(
         <div style={S.page}>
           <div style={S.hdr}><div style={S.hdrT}>Note</div></div>
