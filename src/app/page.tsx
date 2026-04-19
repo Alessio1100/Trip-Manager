@@ -169,6 +169,14 @@ export default function App() {
     save({...data, itinerary:[...data.itinerary,newDay], nextId:data.nextId+1})
     setDayModal(false); setDTitle(''); setDDate(''); setDNum(''); setDPlace(''); setDHotel('')
   }
+  const deleteDay = (id:number) => {
+    if(!confirm('Eliminare questo giorno?')) return
+    save({...data, itinerary: data.itinerary.filter(d=>d.id!==id)})
+  }
+  const deleteActivity = (dayId:number, actIdx:number) => {
+    if(!confirm('Eliminare questa attività?')) return
+    save({...data, itinerary: data.itinerary.map(d=>d.id===dayId?{...d,activities:d.activities.filter((_,i)=>i!==actIdx)}:d)})
+  }
   const saveNote = (id:number, field:'title'|'text', val:string) => {
     save({...data, notes: data.notes.map(n=>n.id===id?{...n,[field]:val}:n)})
   }
@@ -366,7 +374,10 @@ export default function App() {
                   G{day.day}<small style={{fontFamily:"'DM Sans',sans-serif",fontSize:'.58rem',color:'#aaa',fontWeight:400,textTransform:'uppercase'}}>{fmtDate(day.date)}</small>
                 </div>
                 <div style={{flex:1,padding:'12px 10px',minWidth:0}}>
-                  <div style={{fontSize:'.9rem',fontWeight:700,lineHeight:1.3}}>{day.title}</div>
+                  <div style={{display:'flex',alignItems:'center',gap:6}}>
+  					 <div style={{fontSize:'.9rem',fontWeight:700,lineHeight:1.3,flex:1}}>{day.title}</div>
+  					 <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',fontSize:'.85rem',color:'#555',cursor:'pointer',padding:'2px 4px'}}>🗑		  </button>
+		  </div>
                   <div style={{fontSize:'.73rem',color:'#7A6845',marginTop:3,display:'flex',gap:8,flexWrap:'wrap'}}>
                     <span>📍 {day.place}</span>{day.hotel&&<span>🏨 {day.hotel}</span>}
                   </div>
@@ -383,6 +394,7 @@ export default function App() {
                         <div style={{fontSize:'.84rem',fontWeight:600,lineHeight:1.3}}>{a.title}</div>
                         {a.note&&<div style={{fontSize:'.74rem',color:'#7A6845',marginTop:1}}>{a.note}</div>}
                       </div>
+		    <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',fontSize:'.85rem',color:'#ccc',cursor:'pointer',padding:'2px',flexShrink:0}}>🗑</button>
                     </div>
                   ))}
                   {day.notes&&<div style={{background:'#FFFBEB',padding:'9px 14px',fontSize:'.78rem',color:'#92400E',borderTop:'1px solid #F0E8D0'}}>📝 {day.notes}</div>}
