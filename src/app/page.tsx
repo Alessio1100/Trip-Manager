@@ -305,7 +305,7 @@ export default function App() {
             let items = data.items.filter(i=>i.section===sec)
             if(filter!=='Tutto') items=items.filter(i=>i.cat===filter)
             if(!items.length) return null
-            items=[...items].sort((a,b)=>{ if(!a.giorno&&!b.giorno)return 0; if(!a.giorno)return 1; if(!b.giorno)return -1; return a.giorno.localeCompare(b.giorno) })
+            items=[...items].sort((a,b)=>{ if(a.done!==b.done) return a.done?1:-1; if(!a.giorno&&!b.giorno)return 0; if(!a.giorno)return 1; if(!b.giorno)return -1; return a.giorno.localeCompare(b.giorno) })
             return (
               <div key={sec}>
                 <div style={s.secLabel}><span>{SECTION_ICONS[sec]}</span>{sec}</div>
