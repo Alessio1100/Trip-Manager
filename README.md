@@ -1,6 +1,6 @@
 # Perù 2026 — Travel Planner
 
-App Next.js per la gestione del viaggio in Perù, con sync real-time via Vercel KV.
+App Next.js per la gestione del mio viaggio in Perù, con sync real-time via Vercel KV.
 
 ## Deploy su Vercel (passo passo)
 
