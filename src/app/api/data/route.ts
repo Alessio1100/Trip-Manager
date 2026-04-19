@@ -1,28 +1,42 @@
 import { NextRequest, NextResponse } from 'next/server'
-import { kv } from '@vercel/kv'
+import { createClient } from 'redis'
 import { DEFAULT_DATA } from '@/lib/defaultData'
 
 const KEY = 'peru_viaggio_data'
 
+async function getClient() {
+  const client = createClient({ url: process.env.REDIS_URL })
+  await client.connect()
+  return client
+}
+
 export async function GET() {
+  let client
   try {
-    const data = await kv.get(KEY)
-    if (!data) {
-      await kv.set(KEY, DEFAULT_DATA)
+    client = await getClient()
+    const raw = await client.get(KEY)
+    if (!raw) {
+      await client.set(KEY, JSON.stringify(DEFAULT_DATA))
       return NextResponse.json(DEFAULT_DATA)
     }
-    return NextResponse.json(data)
+    return NextResponse.json(JSON.parse(raw))
   } catch {
     return NextResponse.json(DEFAULT_DATA)
+  } finally {
+    await client?.disconnect()
   }
 }
 
 export async function POST(req: NextRequest) {
+  let client
   try {
     const body = await req.json()
-    await kv.set(KEY, body)
+    client = await getClient()
+    await client.set(KEY, JSON.stringify(body))
     return NextResponse.json({ ok: true })
   } catch {
     return NextResponse.json({ ok: false }, { status: 500 })
+  } finally {
+    await client?.disconnect()
   }
 }
