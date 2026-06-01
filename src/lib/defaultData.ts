@@ -51,5 +51,6 @@ export const DEFAULT_DATA = {
     {id:3,title:'Contatti Utili',color:'#3B82F6',text:'Emergenze Perù: 105 (polizia)\nAmbasciata IT Lima: +51 1 463 2727\nAssicurazione: inserire numero polizza'},
     {id:4,title:'Zaino & Bagaglio',color:'#8B5CF6',text:'Volo JetSmart: verificare franchigia\nTrekking: stivali già rodati\nNotti fredde in quota: piumino leggero\nAdattatore universale'},
   ],
+  documenti: [] as { id:number; name:string; url:string; type:'link'|'file'; cat:string; note:string; mime?:string }[],
   nextId: 30,
 }
