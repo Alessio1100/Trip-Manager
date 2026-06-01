@@ -920,27 +920,24 @@ export default function App() {
               const isMultiLeg = total > 1
               return (
                 <div key={day.id} style={{background:T.surface,borderRadius:16,border:`1px solid ${expanded?T.borderStrong:T.border}`,overflow:'hidden',transition:'border-color .15s'}}>
-                  <div style={{display:'flex',alignItems:'stretch',cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
-                    <div style={{background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontDisplay,fontWeight:700,padding:'14px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:62,lineHeight:1,position:'relative'}}>
+                  <div style={{display:'flex',alignItems:'stretch'}}>
+                    <div style={{background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontDisplay,fontWeight:700,padding:'14px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:62,lineHeight:1,position:'relative',cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
                       <div style={{fontSize:16,letterSpacing:'-0.01em'}}>{fmtDate(day.date)}</div>
                       <div style={{fontFamily:T.fontBody,fontSize:9,color:'#9C8F73',fontWeight:500,marginTop:4,letterSpacing:'.08em'}}>G{day.day}{isMultiLeg && <span style={{color:T.goldBright}}> · {position}/{total}</span>}</div>
                     </div>
-                    <div style={{flex:1,padding:'13px 12px',minWidth:0}}>
-                      <div style={{display:'flex',alignItems:'flex-start',gap:6}}>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{fontFamily:T.fontDisplay,fontSize:15.5,fontWeight:700,lineHeight:1.25,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
-                          {isMultiLeg && <div style={{display:'inline-block',marginTop:4,fontSize:9,fontWeight:700,color:T.primary,letterSpacing:'.1em',textTransform:'uppercase',background:T.primarySoft,padding:'2px 6px',borderRadius:99}}>Tappa {position}</div>}
-                        </div>
-                        <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textDim,flexShrink:0}}><Pencil size={13}/></button>
-                        <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textFaint,flexShrink:0}}><Trash2 size={13}/></button>
-                      </div>
+                    <div style={{flex:1,padding:'13px 12px',minWidth:0,cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
+                      <div style={{fontFamily:T.fontDisplay,fontSize:15.5,fontWeight:700,lineHeight:1.25,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
+                      {isMultiLeg && <div style={{display:'inline-block',marginTop:4,fontSize:9,fontWeight:700,color:T.primary,letterSpacing:'.1em',textTransform:'uppercase',background:T.primarySoft,padding:'2px 6px',borderRadius:99}}>Tappa {position}</div>}
                       <div style={{fontSize:11.5,color:T.textDim,marginTop:4,display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
                         <span style={{display:'flex',alignItems:'center',gap:3}}><MapPin size={10}/>{day.place}</span>
                         {day.hotel&&<span style={{display:'flex',alignItems:'center',gap:3}}><Bed size={10}/>{day.hotel}</span>}
                         {wd&&<span style={{display:'flex',alignItems:'center',gap:3,fontWeight:600,color:T.text}}>{wEmoji(wd.code)}{wd.maxTemp}°/{wd.minTemp}°</span>}
                       </div>
                     </div>
-                    <div style={{padding:'14px 14px',display:'flex',alignItems:'center',color:T.textDim,transition:'transform .2s',transform:expanded?'rotate(180deg)':'none'}}><ChevronDown size={16}/></div>
+                    <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'8px 10px',gap:2,borderLeft:`1px solid ${T.borderSoft}`}}>
+                      <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={14}/></button>
+                      <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={14}/></button>
+                    </div>
                   </div>
                   {expanded&&(
                     <div style={{borderTop:`1px solid ${T.borderSoft}`}}>
@@ -954,15 +951,19 @@ export default function App() {
                         </div>
                       )}
                       {day.activities.map((a,i)=>(
-                        <div key={i} style={{display:'flex',gap:12,padding:'11px 16px',borderBottom:`1px solid ${T.borderSoft}`,alignItems:'flex-start'}}>
-                          <div style={{fontSize:11.5,fontWeight:700,color:T.gold,minWidth:38,paddingTop:3,display:'flex',alignItems:'center',gap:2,fontVariantNumeric:'tabular-nums'}}>{a.time||'—'}</div>
-                          <div style={{fontSize:16,paddingTop:0,lineHeight:1.2}}>{a.type}</div>
-                          <div style={{flex:1,minWidth:0}}>
-                            <div style={{fontSize:13.5,fontWeight:600,lineHeight:1.35,color:T.text,letterSpacing:'-0.005em'}}>{a.title}</div>
-                            {a.note&&<div style={{fontSize:12,color:T.textDim,marginTop:2}}>{a.note}</div>}
+                        <div key={i} style={{display:'flex',borderBottom:`1px solid ${T.borderSoft}`,alignItems:'stretch'}}>
+                          <div style={{display:'flex',flex:1,gap:12,padding:'11px 16px',alignItems:'flex-start',minWidth:0}}>
+                            <div style={{fontSize:11.5,fontWeight:700,color:T.gold,minWidth:38,paddingTop:3,display:'flex',alignItems:'center',gap:2,fontVariantNumeric:'tabular-nums'}}>{a.time||'—'}</div>
+                            <div style={{fontSize:16,paddingTop:0,lineHeight:1.2}}>{a.type}</div>
+                            <div style={{flex:1,minWidth:0}}>
+                              <div style={{fontSize:13.5,fontWeight:600,lineHeight:1.35,color:T.text,letterSpacing:'-0.005em'}}>{a.title}</div>
+                              {a.note&&<div style={{fontSize:12,color:T.textDim,marginTop:2}}>{a.note}</div>}
+                            </div>
                           </div>
-                          <button onClick={()=>openEditActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:2,flexShrink:0,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={12}/></button>
-                          <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:2,flexShrink:0,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={12}/></button>
+                          <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'6px 10px',gap:2,borderLeft:`1px solid ${T.borderSoft}`}}>
+                            <button onClick={()=>openEditActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={12}/></button>
+                            <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={12}/></button>
+                          </div>
                         </div>
                       ))}
                       {day.notes&&<div style={{background:T.warningSoft,padding:'10px 16px',fontSize:12.5,color:T.warning,borderTop:`1px solid ${T.borderSoft}`,display:'flex',gap:6,alignItems:'flex-start'}}>📝 <span>{day.notes}</span></div>}
