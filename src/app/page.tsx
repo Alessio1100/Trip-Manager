@@ -5,9 +5,9 @@ import {
   Home, CheckSquare, Calendar, Wallet, StickyNote,
   Plane, Hotel, Bus, Car, Ticket, FileText, Heart, Utensils, MoreHorizontal,
   AlertCircle, Clipboard, Bed, Navigation, Star, Coffee,
-  ChevronDown, Plus, Pencil, Trash2, RefreshCw, ArrowUp,
+  ChevronDown, Plus, Pencil, Trash2, RefreshCw, Check,
   MapPin, Clock, ChevronRight, Search, Map, FolderOpen,
-  ExternalLink, File, X, Download, Link2,
+  ExternalLink, File, X, Download, Link2, Sparkles, ArrowRight,
 } from 'lucide-react'
 
 /* ─── TYPES ─── */
@@ -20,15 +20,51 @@ type WeatherDay = { date:string; maxTemp:number; minTemp:number; code:number; pr
 type AppData    = { items:Item[]; itinerary:Day[]; notes:Note[]; documenti:Documento[]; nextId:number }
 type PageId     = 'dashboard'|'checklist'|'itinerario'|'budget'|'note'|'mappa'|'documenti'
 
-/* ─── CONSTANTS ─── */
+/* ─── DESIGN TOKENS ─── */
+const T = {
+  /* surface */
+  bg:           '#FAF8F2',
+  surface:      '#FFFFFF',
+  surfaceAlt:   '#F4F0E6',
+  surfaceDark:  '#171310',
+  surfaceDarkSoft: '#252019',
+  /* border */
+  border:       '#EBE3D0',
+  borderSoft:   '#F2EDDC',
+  borderStrong: '#D9CFB4',
+  /* text */
+  text:         '#1B1612',
+  textDim:      '#6F6354',
+  textFaint:    '#9C9079',
+  /* brand */
+  gold:         '#B8862E',
+  goldBright:   '#E8B84B',
+  goldSoft:     '#FAF1DD',
+  terra:        '#9A3412',
+  terraSoft:    '#FFF2EA',
+  /* semantic */
+  success:      '#15803D',
+  successSoft:  '#DCFCE7',
+  warning:      '#A16207',
+  warningSoft:  '#FEF3C7',
+  danger:       '#991B1B',
+  dangerSoft:   '#FEE2E2',
+  info:         '#1E40AF',
+  infoSoft:     '#DBEAFE',
+  /* fonts */
+  fontDisplay:  "'Playfair Display', serif",
+  fontBody:     "'DM Sans', sans-serif",
+}
+
+/* ─── DATA CONSTANTS ─── */
 const CAT_COLORS: Record<string,string> = {Voli:'#3B82F6',Hotel:'#EC4899',Bus:'#10B981',Trasporti:'#F59E0B',Tour:'#8B5CF6',Ingressi:'#F97316',Documenti:'#6B7280',Salute:'#14B8A6',Homestay:'#EAB308',Cibo:'#F97316',Varie:'#22C55E'}
-const NOTE_COLORS  = ['#10B981','#3B82F6','#F59E0B','#8B5CF6','#EC4899','#EF4444','#14B8A6']
-const SECTIONS     = ['PUNTI CRITICI','BUROCRAZIA','ALLOGGI','TRASPORTI','TOUR','QUOTIDIANO']
-const CATS         = ['Voli','Hotel','Bus','Trasporti','Tour','Ingressi','Documenti','Salute','Homestay','Cibo','Varie']
-const QUANDO_OPTS  = ['SUBITO','Prima di partire','Online','In loco','In loco/Online','In loco/Tour','Online/Agenzia']
-const ACT_TYPES    = ['👣 Visita','🍽 Pasto','🚌 Trasporto','🛏 Alloggio','🎫 Ingresso','🥾 Trek','📷 Foto','✈️ Volo','🚂 Treno','💤 Riposo']
-const TRIP_START   = '2026-07-25'
-const TRIP_END     = '2026-08-06'
+const NOTE_COLORS = ['#15803D','#1E40AF','#A16207','#7E22CE','#BE185D','#B91C1C','#0E7490']
+const SECTIONS    = ['PUNTI CRITICI','BUROCRAZIA','ALLOGGI','TRASPORTI','TOUR','QUOTIDIANO']
+const CATS        = ['Voli','Hotel','Bus','Trasporti','Tour','Ingressi','Documenti','Salute','Homestay','Cibo','Varie']
+const QUANDO_OPTS = ['SUBITO','Prima di partire','Online','In loco','In loco/Online','In loco/Tour','Online/Agenzia']
+const ACT_TYPES   = ['👣 Visita','🍽 Pasto','🚌 Trasporto','🛏 Alloggio','🎫 Ingresso','🥾 Trek','📷 Foto','✈️ Volo','🚂 Treno','💤 Riposo']
+const TRIP_START  = '2026-07-25'
+const TRIP_END    = '2026-08-06'
 
 const PLACE_COORDS: Record<string, [number, number]> = {
   'Paracas':         [-13.8303, -76.2503],
@@ -49,7 +85,8 @@ const PLACE_COORDS: Record<string, [number, number]> = {
 /* ─── WEATHER UTILS ─── */
 function wEmoji(code: number): string {
   if (code === 0) return '☀️'
-  if (code <= 2)  return code === 1 ? '🌤' : '⛅'
+  if (code === 1) return '🌤'
+  if (code === 2) return '⛅'
   if (code === 3) return '☁️'
   if (code === 45 || code === 48) return '🌫'
   if (code >= 51 && code <= 55)   return '🌦'
@@ -61,8 +98,8 @@ function wEmoji(code: number): string {
 }
 function wDesc(code: number): string {
   if (code === 0) return 'Sereno'
-  if (code === 1) return 'Prevalente sereno'
-  if (code === 2) return 'Parzialmente nuvoloso'
+  if (code === 1) return 'Sereno'
+  if (code === 2) return 'Poco nuvoloso'
   if (code === 3) return 'Coperto'
   if (code === 45 || code === 48) return 'Nebbia'
   if (code >= 51 && code <= 55)   return 'Pioggerella'
@@ -73,89 +110,138 @@ function wDesc(code: number): string {
   return 'Variabile'
 }
 
-/* ─── SMALL COMPONENTS ─── */
-const SectionIcon = ({sec,size=13}:{sec:string,size?:number}) => {
-  const p = {size,strokeWidth:2}
-  if (sec==='PUNTI CRITICI') return <AlertCircle {...p} color="#991B1B"/>
-  if (sec==='BUROCRAZIA')    return <Clipboard   {...p} color="#92400E"/>
-  if (sec==='ALLOGGI')       return <Bed         {...p} color="#9D174D"/>
-  if (sec==='TRASPORTI')     return <Navigation  {...p} color="#92400E"/>
-  if (sec==='TOUR')          return <Ticket      {...p} color="#5B21B6"/>
-  return <Coffee {...p} color="#9A3412"/>
+/* ─── ICONS ─── */
+const SectionIcon = ({sec,size=14}:{sec:string,size?:number}) => {
+  const p = {size,strokeWidth:1.8}
+  if (sec==='PUNTI CRITICI') return <AlertCircle {...p}/>
+  if (sec==='BUROCRAZIA')    return <Clipboard   {...p}/>
+  if (sec==='ALLOGGI')       return <Bed         {...p}/>
+  if (sec==='TRASPORTI')     return <Navigation  {...p}/>
+  if (sec==='TOUR')          return <Ticket      {...p}/>
+  return <Coffee {...p}/>
 }
-const CatIcon = ({cat}:{cat:string}) => {
-  const p = {size:11,strokeWidth:2}
-  if (cat==='Voli')      return <Plane        {...p}/>
-  if (cat==='Hotel')     return <Hotel        {...p}/>
-  if (cat==='Bus')       return <Bus          {...p}/>
-  if (cat==='Trasporti') return <Car          {...p}/>
-  if (cat==='Tour')      return <Star         {...p}/>
-  if (cat==='Ingressi')  return <Ticket       {...p}/>
-  if (cat==='Documenti') return <FileText     {...p}/>
-  if (cat==='Salute')    return <Heart        {...p}/>
-  if (cat==='Homestay')  return <Home         {...p}/>
-  if (cat==='Cibo')      return <Utensils     {...p}/>
+const CatIcon = ({cat,size=12}:{cat:string,size?:number}) => {
+  const p = {size,strokeWidth:1.8}
+  if (cat==='Voli')      return <Plane    {...p}/>
+  if (cat==='Hotel')     return <Hotel    {...p}/>
+  if (cat==='Bus')       return <Bus      {...p}/>
+  if (cat==='Trasporti') return <Car      {...p}/>
+  if (cat==='Tour')      return <Star     {...p}/>
+  if (cat==='Ingressi')  return <Ticket   {...p}/>
+  if (cat==='Documenti') return <FileText {...p}/>
+  if (cat==='Salute')    return <Heart    {...p}/>
+  if (cat==='Homestay')  return <Home     {...p}/>
+  if (cat==='Cibo')      return <Utensils {...p}/>
   return <MoreHorizontal {...p}/>
 }
 
+/* ─── FORMATTERS ─── */
 function fmtDate(s:string){ if(!s) return '—'; const d=new Date(s+'T00:00:00'); return d.toLocaleDateString('it-IT',{day:'2-digit',month:'short'}) }
 function fmtEur(n:number){ return '€ '+Number(n).toLocaleString('it-IT') }
 
+/* ─── BADGES ─── */
 const CAT_BADGE_COLORS: Record<string,{bg:string,color:string}> = {
-  Voli:{bg:'#DBEAFE',color:'#1E40AF'},Hotel:{bg:'#FCE7F3',color:'#9D174D'},Bus:{bg:'#D1FAE5',color:'#065F46'},
-  Trasporti:{bg:'#FEF3C7',color:'#92400E'},Tour:{bg:'#EDE9FE',color:'#5B21B6'},Ingressi:{bg:'#FFEDD5',color:'#9A3412'},
-  Documenti:{bg:'#F3F4F6',color:'#374151'},Salute:{bg:'#ECFDF5',color:'#065F46'},Homestay:{bg:'#FEF9C3',color:'#713F12'},
-  Cibo:{bg:'#FFF7ED',color:'#9A3412'},Varie:{bg:'#F0FDF4',color:'#166534'},
+  Voli:      {bg:'#EFF6FF',color:'#1E3A8A'},
+  Hotel:     {bg:'#FDF2F8',color:'#9F1239'},
+  Bus:       {bg:'#ECFDF5',color:'#065F46'},
+  Trasporti: {bg:'#FEFCE8',color:'#854D0E'},
+  Tour:      {bg:'#F5F3FF',color:'#5B21B6'},
+  Ingressi:  {bg:'#FFF7ED',color:'#9A3412'},
+  Documenti: {bg:'#F8FAFC',color:'#334155'},
+  Salute:    {bg:'#F0FDFA',color:'#115E59'},
+  Homestay:  {bg:'#FEFCE8',color:'#854D0E'},
+  Cibo:      {bg:'#FFF7ED',color:'#9A3412'},
+  Varie:     {bg:'#F0FDF4',color:'#166534'},
 }
-function CatBadge({cat}:{cat:string}){
-  const c = CAT_BADGE_COLORS[cat]||{bg:'#eee',color:'#333'}
-  return <span style={{background:c.bg,color:c.color,padding:'2px 8px',borderRadius:99,fontSize:'.7rem',fontWeight:600,whiteSpace:'nowrap',display:'inline-flex',alignItems:'center',gap:4}}><CatIcon cat={cat}/>{cat}</span>
+function CatBadge({cat,size='md'}:{cat:string,size?:'sm'|'md'}){
+  const c = CAT_BADGE_COLORS[cat]||{bg:'#F5F5F4',color:'#44403C'}
+  const isSm = size==='sm'
+  return (
+    <span style={{
+      background: c.bg, color: c.color,
+      padding: isSm ? '2px 7px' : '3px 9px',
+      borderRadius: 999,
+      fontSize: isSm ? 10.5 : 11.5,
+      fontWeight: 600,
+      whiteSpace: 'nowrap',
+      display:'inline-flex',alignItems:'center',gap:4,
+      letterSpacing: '-0.005em',
+    }}>
+      <CatIcon cat={cat} size={isSm?10:11}/>{cat}
+    </span>
+  )
 }
 function QBadge({q}:{q:string}){
-  const styles: Record<string,{bg:string,color:string}> = {'SUBITO':{bg:'#FEE2E2',color:'#991B1B'},'Prima di partire':{bg:'#FEF3C7',color:'#92400E'}}
-  const c = q.includes('Online')?{bg:'#DBEAFE',color:'#1E40AF'}: styles[q]||{bg:'#F3F4F6',color:'#374151'}
-  return <span style={{background:c.bg,color:c.color,padding:'2px 8px',borderRadius:4,fontSize:'.7rem',fontWeight:600}}>{q}</span>
+  const styles: Record<string,{bg:string,color:string}> = {
+    'SUBITO':           {bg:T.dangerSoft, color:T.danger},
+    'Prima di partire': {bg:T.warningSoft,color:T.warning},
+  }
+  const c = q.includes('Online') ? {bg:T.infoSoft,color:T.info} : styles[q] || {bg:'#F5F5F4',color:'#44403C'}
+  return <span style={{background:c.bg,color:c.color,padding:'3px 9px',borderRadius:6,fontSize:11,fontWeight:600,letterSpacing:'-0.005em'}}>{q}</span>
 }
 function CancBadge({item}:{item:Item}){
   if(!item.cancGratuita) return null
-  if(!item.cancScadenza) return <span style={{background:'#DCFCE7',color:'#166534',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Canc. gratuita</span>
+  const base = {padding:'3px 9px',borderRadius:999,fontSize:11,fontWeight:600,letterSpacing:'-0.005em'} as const
+  if(!item.cancScadenza) return <span style={{...base,background:T.successSoft,color:T.success}}>Canc. gratuita</span>
   const oggi=new Date(); oggi.setHours(0,0,0,0)
   const diff=Math.ceil((new Date(item.cancScadenza+'T00:00:00').getTime()-oggi.getTime())/86400000)
-  if(diff<0)  return <span style={{background:'#FEE2E2',color:'#991B1B',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Scaduta {fmtDate(item.cancScadenza)}</span>
-  if(diff<=7) return <span style={{background:'#FEF9C3',color:'#713F12',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Scade tra {diff}g</span>
-  return <span style={{background:'#DCFCE7',color:'#166534',padding:'2px 9px',borderRadius:99,fontSize:'.7rem',fontWeight:600}}>Canc. fino al {fmtDate(item.cancScadenza)}</span>
+  if(diff<0)  return <span style={{...base,background:T.dangerSoft,color:T.danger}}>Scaduta {fmtDate(item.cancScadenza)}</span>
+  if(diff<=7) return <span style={{...base,background:T.warningSoft,color:T.warning}}>Scade tra {diff}g</span>
+  return <span style={{...base,background:T.successSoft,color:T.success}}>Canc. fino al {fmtDate(item.cancScadenza)}</span>
 }
 
+/* ─── MODAL ─── */
 function Modal({title,children,onClose}:{title:string,children:React.ReactNode,onClose:()=>void}){
   return (
-    <div style={{position:'fixed',inset:0,background:'rgba(0,0,0,.55)',zIndex:500,display:'flex',alignItems:'flex-end'}} onClick={e=>{if(e.target===e.currentTarget)onClose()}}>
-      <div style={{background:'#FAF6EE',borderRadius:'20px 20px 0 0',width:'100%',maxHeight:'92dvh',overflowY:'auto',paddingBottom:'calc(16px + env(safe-area-inset-bottom,0px))'}}>
-        <div style={{width:36,height:4,background:'#D4C4A0',borderRadius:99,margin:'12px auto 14px'}}/>
-        <div style={{fontFamily:"'Playfair Display',serif",fontSize:'1.15rem',padding:'0 20px 13px',borderBottom:'1px solid #D4C4A0',marginBottom:2}}>{title}</div>
+    <div
+      style={{position:'fixed',inset:0,background:'rgba(20,16,12,.55)',zIndex:500,display:'flex',alignItems:'flex-end',backdropFilter:'blur(4px)',WebkitBackdropFilter:'blur(4px)'}}
+      onClick={e=>{if(e.target===e.currentTarget)onClose()}}
+    >
+      <div style={{background:T.bg,borderRadius:'24px 24px 0 0',width:'100%',maxWidth:600,margin:'0 auto',maxHeight:'92dvh',overflowY:'auto',paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))'}}>
+        <div style={{width:40,height:4,background:T.borderStrong,borderRadius:99,margin:'12px auto 16px'}}/>
+        <div style={{fontFamily:T.fontDisplay,fontSize:22,fontWeight:700,color:T.text,padding:'0 24px 16px',letterSpacing:'-0.01em'}}>{title}</div>
         {children}
       </div>
     </div>
   )
 }
 
+/* ─── FORM PRIMITIVES ─── */
+const inputStyle: React.CSSProperties = {
+  width:'100%',
+  border:`1px solid ${T.border}`,
+  borderRadius:10,
+  padding:'12px 14px',
+  fontFamily:T.fontBody,
+  fontSize:14.5,
+  color:T.text,
+  background:T.surface,
+  WebkitAppearance:'none',
+  minHeight:46,
+  boxSizing:'border-box',
+  outline:'none',
+}
+const Label = ({children}:{children:React.ReactNode}) => (
+  <label style={{display:'block',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:T.textDim,marginBottom:6}}>{children}</label>
+)
 const FG = ({label,children}:{label:string,children:React.ReactNode}) => (
-  <div style={{padding:'10px 20px 0'}}>
-    <label style={{display:'block',fontSize:'.7rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'#7A6845',marginBottom:5}}>{label}</label>
-    {children}
-  </div>
+  <div style={{padding:'12px 24px 0'}}><Label>{label}</Label>{children}</div>
 )
-const inputStyle: React.CSSProperties = {width:'100%',border:'1.5px solid #D4C4A0',borderRadius:10,padding:'12px 13px',fontFamily:"'DM Sans',sans-serif",fontSize:'.92rem',color:'#2C2012',background:'#fff',WebkitAppearance:'none',minHeight:44,boxSizing:'border-box'}
-const FRow = ({children}:{children:React.ReactNode}) => <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0 12px',padding:'10px 20px 0'}}>{children}</div>
+const FRow = ({children}:{children:React.ReactNode}) => (
+  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'0 12px',padding:'12px 24px 0'}}>{children}</div>
+)
 const FRowItem = ({label,children}:{label:string,children:React.ReactNode}) => (
-  <div><label style={{display:'block',fontSize:'.7rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'#7A6845',marginBottom:5}}>{label}</label>{children}</div>
+  <div><Label>{label}</Label>{children}</div>
 )
+const btnPrimary: React.CSSProperties   = {flex:1,background:T.surfaceDark,border:'none',borderRadius:12,padding:'14px 16px',fontFamily:T.fontBody,fontSize:14.5,fontWeight:700,color:T.goldBright,cursor:'pointer',letterSpacing:'-0.005em'}
+const btnSecondary: React.CSSProperties = {flex:1,background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'14px 16px',fontFamily:T.fontBody,fontSize:14.5,fontWeight:600,color:T.textDim,cursor:'pointer',letterSpacing:'-0.005em'}
 
 /* ─── DYNAMIC MAP ─── */
 const MapLeafletDynamic = dynamic(() => import('@/components/MapLeaflet'), {
   ssr: false,
   loading: () => (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:'#7A6845',fontSize:'.9rem',flexDirection:'column',gap:10}}>
-      <Map size={30} color="#D4C4A0"/>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:T.textDim,fontSize:14,flexDirection:'column',gap:10}}>
+      <Map size={32} color={T.borderStrong} strokeWidth={1.5}/>
       <span>Caricamento mappa…</span>
     </div>
   ),
@@ -166,11 +252,11 @@ const MapLeafletDynamic = dynamic(() => import('@/components/MapLeaflet'), {
 ══════════════════════════════ */
 export default function App() {
   /* core */
-  const [data, setData]       = useState<AppData|null>(null)
-  const [page, setPage]       = useState<PageId>('dashboard')
-  const [filter, setFilter]   = useState('Tutto')
+  const [data, setData]         = useState<AppData|null>(null)
+  const [page, setPage]         = useState<PageId>('dashboard')
+  const [filter, setFilter]     = useState('Tutto')
   const [openDays, setOpenDays] = useState<Set<number>>(new Set())
-  const [syncing, setSyncing] = useState(false)
+  const [syncing, setSyncing]   = useState(false)
   const [lastSync, setLastSync] = useState('')
   const saveTimeout = useRef<ReturnType<typeof setTimeout>|null>(null)
 
@@ -281,7 +367,7 @@ export default function App() {
     }, 600)
   }, [])
 
-  /* ── SEARCH RESULTS (hook must be before any early return) ── */
+  /* ── SEARCH RESULTS ── */
   const searchResults = useMemo(() => {
     if (!data || !searchQ.trim()) return null
     const q = searchQ.toLowerCase().trim()
@@ -295,9 +381,9 @@ export default function App() {
 
   /* ── LOADING ── */
   if (!data) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100dvh',flexDirection:'column',gap:12,background:'#1A1208',color:'#E8B84B',fontFamily:"'DM Sans',sans-serif"}}>
-      <div style={{fontSize:'2rem'}}>🦙</div>
-      <div style={{fontSize:'.9rem',color:'#aaa'}}>Caricamento Perù 2026…</div>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100dvh',flexDirection:'column',gap:14,background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontBody}}>
+      <div style={{fontSize:'2.4rem',animation:'pulse 2s ease-in-out infinite'}}>🦙</div>
+      <div style={{fontSize:13,color:'#9C8F73',letterSpacing:'0.04em',textTransform:'uppercase'}}>Caricamento Perù 2026</div>
     </div>
   )
 
@@ -364,9 +450,9 @@ export default function App() {
   }
 
   /* ── NOTE ACTIONS ── */
-  const saveNote  = (id:number, field:'title'|'text', val:string) => save({...data, notes: data.notes.map(n=>n.id===id?{...n,[field]:val}:n)})
+  const saveNote   = (id:number, field:'title'|'text', val:string) => save({...data, notes: data.notes.map(n=>n.id===id?{...n,[field]:val}:n)})
   const deleteNote = (id:number) => { if(!confirm('Eliminare?')) return; save({...data, notes: data.notes.filter(n=>n.id!==id)}) }
-  const addNote   = () => save({...data, notes:[...data.notes,{id:data.nextId,title:'Nuova nota',color:NOTE_COLORS[data.notes.length%NOTE_COLORS.length],text:''}], nextId:data.nextId+1})
+  const addNote    = () => save({...data, notes:[...data.notes,{id:data.nextId,title:'Nuova nota',color:NOTE_COLORS[data.notes.length%NOTE_COLORS.length],text:''}], nextId:data.nextId+1})
 
   /* ── DOCUMENTO ACTIONS ── */
   const handleFileUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -399,6 +485,7 @@ export default function App() {
   const pagato    = data.items.filter(i=>i.done&&!i.cancGratuita).reduce((s,i)=>s+i.costo,0)
   const cancConf  = data.items.filter(i=>i.done&&i.cancGratuita).reduce((s,i)=>s+i.costo,0)
   const doneCount = data.items.filter(i=>i.done).length
+  const progress  = data.items.length ? Math.round(doneCount/data.items.length*100) : 0
 
   const oggi      = new Date(); oggi.setHours(0,0,0,0)
   const startDate = new Date(TRIP_START+'T00:00:00')
@@ -411,178 +498,214 @@ export default function App() {
   const prossimoGiorno   = [...data.itinerary].sort((a,b)=>a.day-b.day).find(d=>!d.date||new Date(d.date+'T00:00:00')>=oggi) || [...data.itinerary].sort((a,b)=>a.day-b.day)[0]
   const daFare           = SECTIONS.filter(s=>s!=='QUOTIDIANO').map(sec=>({sec,count:data.items.filter(i=>i.section===sec&&!i.done).length})).filter(x=>x.count>0)
 
-  /* ── STYLES ── */
-  const S = {
-    page: {height:'calc(100dvh - 62px - env(safe-area-inset-bottom,0px))',overflowY:'auto' as const,WebkitOverflowScrolling:'touch' as const},
-    hdr:  {background:'#1A1208',color:'#fff',padding:'14px 16px',position:'sticky' as const,top:0,zIndex:50},
-    hdrT: {fontFamily:"'Playfair Display',serif",fontSize:'1.2rem',color:'#E8B84B'},
-    hdrS: {fontSize:'.74rem',color:'#aaa',marginTop:2},
-    card: {margin:'0 16px 8px',background:'#fff',borderRadius:12,border:'1px solid #D4C4A0',overflow:'hidden'},
-    btn:  {flex:1,background:'#1A1208',border:'none',borderRadius:12,padding:14,fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:700,color:'#E8B84B',cursor:'pointer'} as React.CSSProperties,
-    btnC: {flex:1,background:'#F0E8D0',border:'1.5px solid #D4C4A0',borderRadius:12,padding:14,fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:600,color:'#7A6845',cursor:'pointer'} as React.CSSProperties,
-    iBtn: {border:'none',background:'#F0E8D0',borderRadius:8,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'} as React.CSSProperties,
+  /* ── UI HELPERS ── */
+  const PAGE_STYLE: React.CSSProperties = {
+    height:'calc(100dvh - 64px - env(safe-area-inset-bottom,0px))',
+    overflowY:'auto',
+    WebkitOverflowScrolling:'touch',
   }
 
-  const searchBtn = (
-    <button onClick={()=>setSearchOpen(true)} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',padding:'4px 6px',borderRadius:8}}>
-      <Search size={17} color="#E8B84B"/>
+  const PageHeader = ({title, subtitle, action}:{title:string; subtitle?:string; action?:React.ReactNode}) => (
+    <header style={{position:'sticky',top:0,zIndex:50,background:T.bg,borderBottom:`1px solid ${T.borderSoft}`,padding:'18px 20px 14px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
+        <div style={{minWidth:0,flex:1}}>
+          <h1 style={{fontFamily:T.fontDisplay,fontSize:24,fontWeight:700,color:T.text,letterSpacing:'-0.015em',lineHeight:1.1,margin:0}}>{title}</h1>
+          {subtitle && <p style={{fontSize:13,color:T.textDim,marginTop:4,margin:'4px 0 0',letterSpacing:'-0.005em'}}>{subtitle}</p>}
+        </div>
+        {action && <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>{action}</div>}
+      </div>
+    </header>
+  )
+
+  const SearchBtn = () => (
+    <button onClick={()=>setSearchOpen(true)} style={{background:T.surface,border:`1px solid ${T.border}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0,borderRadius:10,width:38,height:38}} aria-label="Cerca">
+      <Search size={17} color={T.text} strokeWidth={2}/>
     </button>
+  )
+  const SyncDot = () => (
+    <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:syncing?T.gold:T.textFaint,padding:'7px 10px',background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,height:38,boxSizing:'border-box',letterSpacing:'-0.005em'}}>
+      <span style={{width:6,height:6,borderRadius:99,background:syncing?T.gold:'#10B981',animation:syncing?'pulse 1.2s ease-in-out infinite':'none'}}/>
+      {syncing ? 'sync…' : lastSync}
+    </span>
   )
 
   const goToChecklist = (cat?:string) => { if(cat) setFilter(cat); setPage('checklist') }
 
   const navItems: {id:PageId; icon:React.ReactNode; lbl:string}[] = [
-    {id:'dashboard',  icon:<Home        size={19} strokeWidth={page==='dashboard'  ?2.5:1.5}/>, lbl:'Home'},
-    {id:'checklist',  icon:<CheckSquare size={19} strokeWidth={page==='checklist'  ?2.5:1.5}/>, lbl:'Lista'},
-    {id:'mappa',      icon:<Map         size={19} strokeWidth={page==='mappa'      ?2.5:1.5}/>, lbl:'Mappa'},
-    {id:'itinerario', icon:<Calendar    size={19} strokeWidth={page==='itinerario' ?2.5:1.5}/>, lbl:'Giorni'},
-    {id:'budget',     icon:<Wallet      size={19} strokeWidth={page==='budget'     ?2.5:1.5}/>, lbl:'Budget'},
-    {id:'documenti',  icon:<FolderOpen  size={19} strokeWidth={page==='documenti'  ?2.5:1.5}/>, lbl:'Docs'},
-    {id:'note',       icon:<StickyNote  size={19} strokeWidth={page==='note'       ?2.5:1.5}/>, lbl:'Note'},
+    {id:'dashboard',  icon:<Home        size={20} strokeWidth={page==='dashboard'?2.4:1.7}/>, lbl:'Home'},
+    {id:'checklist',  icon:<CheckSquare size={20} strokeWidth={page==='checklist'?2.4:1.7}/>, lbl:'Lista'},
+    {id:'mappa',      icon:<Map         size={20} strokeWidth={page==='mappa'?2.4:1.7}/>, lbl:'Mappa'},
+    {id:'itinerario', icon:<Calendar    size={20} strokeWidth={page==='itinerario'?2.4:1.7}/>, lbl:'Giorni'},
+    {id:'budget',     icon:<Wallet      size={20} strokeWidth={page==='budget'?2.4:1.7}/>, lbl:'Budget'},
+    {id:'documenti',  icon:<FolderOpen  size={20} strokeWidth={page==='documenti'?2.4:1.7}/>, lbl:'Docs'},
+    {id:'note',       icon:<StickyNote  size={20} strokeWidth={page==='note'?2.4:1.7}/>, lbl:'Note'},
   ]
 
   return (
-    <div style={{fontFamily:"'DM Sans',sans-serif",background:'#FAF6EE',color:'#2C2012',maxWidth:600,margin:'0 auto'}}>
-      {syncing && <div style={{position:'fixed',top:0,left:0,right:0,height:3,background:'#E8B84B',zIndex:999}}/>}
+    <div style={{fontFamily:T.fontBody,background:T.bg,color:T.text,maxWidth:600,margin:'0 auto',minHeight:'100dvh',position:'relative'}}>
+      {syncing && <div style={{position:'fixed',top:0,left:0,right:0,height:2.5,background:`linear-gradient(90deg,transparent,${T.goldBright},transparent)`,zIndex:999,backgroundSize:'200% 100%',animation:'shimmer 1.5s linear infinite'}}/>}
+
+      {/* keyframes */}
+      <style>{`
+        @keyframes pulse { 0%,100% { opacity:1 } 50% { opacity:.4 } }
+        @keyframes shimmer { 0% { background-position: 200% 0 } 100% { background-position: -200% 0 } }
+        @keyframes fadeIn { from { opacity:0; transform:translateY(8px) } to { opacity:1; transform:translateY(0) } }
+        ::-webkit-scrollbar { width: 0; display: none }
+        input:focus, select:focus, textarea:focus { border-color: ${T.gold} !important; box-shadow: 0 0 0 3px ${T.goldSoft}; }
+        button:active { transform: scale(0.98); }
+      `}</style>
 
       {/* ══════════════════════════════
           DASHBOARD
       ══════════════════════════════ */}
       {page==='dashboard'&&(
-        <div style={S.page}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start'}}>
-              <div style={S.hdrT}>🦙 Perù 2026</div>
-              <div style={{display:'flex',alignItems:'center',gap:4,marginTop:2}}>
-                {searchBtn}
-                <span style={{display:'flex',alignItems:'center',gap:4,fontSize:'.72rem',color:syncing?'#E8B84B':'#555'}}>
-                  {syncing?<><ArrowUp size={10}/>sync…</>:<><RefreshCw size={10}/>{lastSync}</>}
-                </span>
+        <div style={PAGE_STYLE}>
+          <PageHeader
+            title="Perù 2026"
+            subtitle="25 luglio – 6 agosto · 2 persone"
+            action={<><SearchBtn/><SyncDot/></>}
+          />
+
+          <div style={{padding:'16px 20px 24px',display:'flex',flexDirection:'column',gap:14}}>
+
+            {/* HERO COUNTDOWN */}
+            <div style={{background:T.surfaceDark,borderRadius:24,padding:'26px 24px',color:'#fff',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',top:-50,right:-50,width:180,height:180,borderRadius:'50%',background:`radial-gradient(circle,${T.gold}40,transparent 70%)`}}/>
+              <div style={{position:'absolute',bottom:-30,left:-30,width:120,height:120,borderRadius:'50%',background:`radial-gradient(circle,${T.terra}25,transparent 70%)`}}/>
+
+              {finito ? (
+                <div style={{position:'relative'}}>
+                  <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:8,fontWeight:600}}>Viaggio terminato</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:32,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1}}>Speriamo sia andato bene</div>
+                  <div style={{fontSize:13,color:'#A89B7E',marginTop:8}}>🦙 Adios Perú</div>
+                </div>
+              ) : inViaggio ? (
+                <div style={{position:'relative'}}>
+                  <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:8,fontWeight:600}}>Sei in viaggio</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:34,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1}}>Buon Perù ✈️</div>
+                  <div style={{fontSize:13,color:'#A89B7E',marginTop:8}}>Termina il {fmtDate(TRIP_END)}</div>
+                </div>
+              ) : (
+                <div style={{position:'relative',display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:16}}>
+                  <div>
+                    <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:6,fontWeight:600}}>Alla partenza</div>
+                    <div style={{fontFamily:T.fontDisplay,fontSize:64,fontWeight:700,color:T.goldBright,lineHeight:.9,letterSpacing:'-0.04em'}}>{daysToGo}</div>
+                    <div style={{fontSize:13,color:'#A89B7E',marginTop:8,letterSpacing:'-0.005em'}}>giorni · {fmtDate(TRIP_START)}</div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontSize:10,color:'#9C8F73',marginBottom:6,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600}}>Pronto</div>
+                    <div style={{fontSize:26,fontWeight:700,color:'#fff',lineHeight:1,letterSpacing:'-0.02em'}}>{progress}<span style={{fontSize:14,color:'#7C7058',fontWeight:500}}>%</span></div>
+                    <div style={{fontSize:11,color:'#A89B7E',marginTop:6}}>{doneCount}/{data.items.length} task</div>
+                  </div>
+                </div>
+              )}
+            </div>
+
+            {/* WEATHER + PROGRESS GRID */}
+            <div style={{display:'grid',gridTemplateColumns:currentWeather?'1fr 1fr':'1fr',gap:10}}>
+              {currentWeather && (
+                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,padding:'14px 16px'}}>
+                  <div style={{fontSize:10,color:T.textFaint,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,marginBottom:8}}>Ora qui</div>
+                  <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:4}}>
+                    <span style={{fontSize:32,lineHeight:1}}>{wEmoji(currentWeather.code)}</span>
+                    <span style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:700,color:T.text,letterSpacing:'-0.02em'}}>{currentWeather.temp}°</span>
+                  </div>
+                  <div style={{fontSize:12,color:T.textDim,display:'flex',alignItems:'center',gap:3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                    <MapPin size={10} strokeWidth={2}/>{currentWeather.loc}
+                  </div>
+                </div>
+              )}
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,padding:'14px 16px',display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+                <div style={{fontSize:10,color:T.textFaint,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700}}>Budget</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:6,marginTop:4}}>
+                  <span style={{fontFamily:T.fontDisplay,fontSize:24,fontWeight:700,color:T.text,letterSpacing:'-0.02em'}}>{fmtEur(pagato).replace('€ ','')}</span>
+                  <span style={{fontSize:11,color:T.textDim}}>su {fmtEur(total)}</span>
+                </div>
+                <div style={{background:T.surfaceAlt,borderRadius:99,height:5,overflow:'hidden',marginTop:8}}>
+                  <div style={{display:'flex',height:'100%'}}>
+                    <div style={{width:`${pagato/total*100}%`,background:T.success,transition:'width .6s'}}/>
+                    <div style={{width:`${cancConf/total*100}%`,background:T.warning,transition:'width .6s'}}/>
+                  </div>
+                </div>
               </div>
             </div>
-            <div style={S.hdrS}>25 lug – 6 ago · 13 notti · 2 persone</div>
-          </div>
 
-          {/* COUNTDOWN HERO */}
-          <div style={{margin:'16px 16px 12px',background:'linear-gradient(135deg,#1A1208,#2A1A08)',borderRadius:16,padding:'24px 22px',color:'#fff',position:'relative',overflow:'hidden'}}>
-            <div style={{position:'absolute',top:-30,right:-30,width:120,height:120,borderRadius:'50%',background:'rgba(201,153,42,.12)'}}/>
-            {finito ? (
-              <div><div style={{fontFamily:"'Playfair Display',serif",fontSize:'2rem',fontWeight:700,color:'#E8B84B'}}>Viaggio terminato</div><div style={{fontSize:'.85rem',color:'#aaa',marginTop:4}}>Speriamo sia andato bene! 🦙</div></div>
-            ) : inViaggio ? (
-              <div><div style={{fontSize:'.7rem',color:'#aaa',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:6}}>Sei in viaggio!</div><div style={{fontFamily:"'Playfair Display',serif",fontSize:'2rem',fontWeight:700,color:'#E8B84B'}}>Buon Perù! ✈️</div><div style={{fontSize:'.82rem',color:'#ccc',marginTop:4}}>Finisce il {fmtDate(TRIP_END)}</div></div>
-            ) : (
-              <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between'}}>
-                <div>
-                  <div style={{fontSize:'.7rem',color:'#aaa',textTransform:'uppercase',letterSpacing:'.1em',marginBottom:4}}>Alla partenza</div>
-                  <div style={{fontFamily:"'Playfair Display',serif",fontSize:'3.2rem',fontWeight:700,color:'#E8B84B',lineHeight:1}}>{daysToGo}</div>
-                  <div style={{fontSize:'.85rem',color:'#ccc',marginTop:4}}>giorni · {fmtDate(TRIP_START)}</div>
+            {/* DA PRENOTARE */}
+            {daFare.length > 0 && (
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,overflow:'hidden'}}>
+                <div style={{padding:'14px 18px 6px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim}}>Da prenotare</div>
+                  <button onClick={()=>goToChecklist()} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:T.gold,fontSize:12,fontWeight:600,fontFamily:T.fontBody}}>
+                    Apri lista<ChevronRight size={13}/>
+                  </button>
                 </div>
-                <div style={{textAlign:'right'}}>
-                  <div style={{fontSize:'.7rem',color:'#aaa',marginBottom:4}}>Checklist</div>
-                  <div style={{fontSize:'1.3rem',fontWeight:700,color:'#fff'}}>{doneCount}<span style={{fontSize:'.8rem',color:'#888',fontWeight:400}}>/{data.items.length}</span></div>
-                  <div style={{fontSize:'.7rem',color:'#aaa',marginTop:2}}>{Math.round(doneCount/data.items.length*100)}% fatto</div>
+                <div style={{padding:'4px 6px 8px'}}>
+                  {daFare.map(({sec,count})=>(
+                    <button key={sec} onClick={()=>goToChecklist()} style={{width:'100%',background:'none',border:'none',padding:'10px 12px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',textAlign:'left',borderRadius:12,fontFamily:T.fontBody,transition:'background .15s'}} onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=T.surfaceAlt}} onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background='none'}}>
+                      <div style={{width:30,height:30,borderRadius:8,background:T.surfaceAlt,display:'flex',alignItems:'center',justifyContent:'center',color:T.terra,flexShrink:0}}>
+                        <SectionIcon sec={sec} size={14}/>
+                      </div>
+                      <div style={{flex:1,fontSize:14,fontWeight:600,color:T.text,letterSpacing:'-0.005em'}}>{sec.charAt(0)+sec.slice(1).toLowerCase()}</div>
+                      <div style={{background:T.warningSoft,color:T.warning,borderRadius:99,padding:'2px 9px',fontSize:11.5,fontWeight:700,minWidth:24,textAlign:'center'}}>{count}</div>
+                      <ChevronRight size={14} color={T.textFaint}/>
+                    </button>
+                  ))}
                 </div>
               </div>
             )}
-          </div>
 
-          {/* METEO ATTUALE */}
-          {currentWeather && (
-            <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',padding:'12px 16px',display:'flex',alignItems:'center',gap:12}}>
-              <div style={{fontSize:'1.9rem',lineHeight:1}}>{wEmoji(currentWeather.code)}</div>
-              <div style={{flex:1}}>
-                <div style={{fontSize:'.88rem',fontWeight:700,color:'#2C2012'}}>{currentWeather.temp}° · {wDesc(currentWeather.code)}</div>
-                <div style={{fontSize:'.72rem',color:'#7A6845',marginTop:3,display:'flex',alignItems:'center',gap:3}}><MapPin size={9}/>{currentWeather.loc}</div>
-              </div>
-              <div style={{fontSize:'.62rem',color:'#aaa',textAlign:'right',lineHeight:1.5}}>Meteo<br/>attuale</div>
-            </div>
-          )}
+            {/* PROSSIMO GIORNO */}
+            {prossimoGiorno && (
+              <button onClick={()=>setPage('itinerario')} style={{background:'none',border:'none',padding:0,cursor:'pointer',width:'100%',textAlign:'left'}}>
+                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,overflow:'hidden'}}>
+                  <div style={{padding:'14px 18px 8px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim}}>Prossima tappa</div>
+                    <ArrowRight size={14} color={T.gold}/>
+                  </div>
+                  <div style={{padding:'4px 18px 14px'}}>
+                    <div style={{display:'flex',alignItems:'flex-start',gap:14,marginBottom:10}}>
+                      <div style={{background:T.surfaceDark,color:T.goldBright,borderRadius:14,padding:'10px 12px',fontFamily:T.fontDisplay,fontWeight:700,lineHeight:1,textAlign:'center',minWidth:62}}>
+                        <div style={{fontSize:18,letterSpacing:'-0.01em'}}>{fmtDate(prossimoGiorno.date)}</div>
+                        <div style={{fontFamily:T.fontBody,fontSize:9,color:'#9C8F73',fontWeight:500,marginTop:3,letterSpacing:'.08em'}}>GIORNO {prossimoGiorno.day}</div>
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:T.fontDisplay,fontSize:18,fontWeight:700,color:T.text,letterSpacing:'-0.015em',lineHeight:1.2}}>{prossimoGiorno.title}</div>
+                        <div style={{fontSize:12.5,color:T.textDim,display:'flex',alignItems:'center',gap:4,marginTop:6}}><MapPin size={11} strokeWidth={2}/>{prossimoGiorno.place}</div>
+                      </div>
+                    </div>
+                    {prossimoGiorno.activities.slice(0,3).map((a,i)=>(
+                      <div key={i} style={{display:'flex',gap:10,padding:'7px 0',borderTop:`1px solid ${T.borderSoft}`,alignItems:'center'}}>
+                        <div style={{fontSize:11,fontWeight:600,color:T.gold,minWidth:38,fontVariantNumeric:'tabular-nums'}}>{a.time}</div>
+                        <div style={{fontSize:14}}>{a.type}</div>
+                        <div style={{fontSize:13,fontWeight:500,flex:1,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{a.title}</div>
+                      </div>
+                    ))}
+                    {prossimoGiorno.activities.length>3&&<div style={{fontSize:11,color:T.textFaint,paddingTop:8,textAlign:'center'}}>+{prossimoGiorno.activities.length-3} altre attività</div>}
+                  </div>
+                </div>
+              </button>
+            )}
 
-          {/* BUDGET BAR */}
-          <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',padding:'14px 16px'}}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:10}}>
-              <div style={{fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',gap:5}}><Wallet size={13} color="#7A6845"/>Budget</div>
-              <button onClick={()=>setPage('budget')} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:'#C9992A',fontSize:'.75rem',fontWeight:600}}>Dettagli<ChevronRight size={13}/></button>
-            </div>
-            <div style={{background:'#F0E8D0',borderRadius:99,height:8,overflow:'hidden',marginBottom:10}}>
-              <div style={{display:'flex',height:8,borderRadius:99,overflow:'hidden'}}>
-                <div style={{width:`${pagato/total*100}%`,background:'#22C55E',transition:'width .6s'}}/>
-                <div style={{width:`${cancConf/total*100}%`,background:'#EAB308',transition:'width .6s'}}/>
-              </div>
-            </div>
-            <div style={{display:'flex',justifyContent:'space-between',fontSize:'.78rem'}}>
-              <div style={{display:'flex',gap:12}}>
-                <span style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:8,height:8,borderRadius:2,background:'#22C55E'}}/><span style={{color:'#555'}}>Pagato <strong>{fmtEur(pagato)}</strong></span></span>
-                {cancConf>0&&<span style={{display:'flex',alignItems:'center',gap:4}}><div style={{width:8,height:8,borderRadius:2,background:'#EAB308'}}/><span style={{color:'#555'}}>Canc. <strong>{fmtEur(cancConf)}</strong></span></span>}
-              </div>
-              <span style={{color:'#7A6845',fontWeight:600}}>{fmtEur(total)}</span>
-            </div>
-          </div>
-
-          {/* DA PRENOTARE */}
-          {daFare.length > 0 && (
-            <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
-              <div style={{padding:'12px 16px 10px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'1px solid #F0E8D0'}}>
-                <div style={{fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',gap:5}}><CheckSquare size={13} color="#7A6845"/>Da prenotare</div>
-                <button onClick={()=>goToChecklist()} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:'#C9992A',fontSize:'.75rem',fontWeight:600}}>Vedi tutto<ChevronRight size={13}/></button>
-              </div>
-              {daFare.map(({sec,count})=>(
-                <button key={sec} onClick={()=>goToChecklist()} style={{width:'100%',background:'none',border:'none',borderBottom:'1px solid #F0E8D0',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left'}}>
-                  <SectionIcon sec={sec} size={14}/>
-                  <div style={{flex:1,fontSize:'.86rem',fontWeight:500,color:'#2C2012'}}>{sec.charAt(0)+sec.slice(1).toLowerCase()}</div>
-                  <div style={{background:'#FEF3C7',color:'#92400E',borderRadius:99,padding:'2px 9px',fontSize:'.75rem',fontWeight:700}}>{count}</div>
-                  <ChevronRight size={14} color="#ccc"/>
-                </button>
-              ))}
-            </div>
-          )}
-
-          {/* PROSSIMO ALLOGGIO */}
-          {prossimoAlloggio && (
-            <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
-              <div style={{padding:'12px 16px 10px',fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',gap:5,borderBottom:'1px solid #F0E8D0'}}><Bed size={13} color="#9D174D"/>Prossimo alloggio</div>
-              <div style={{padding:'12px 16px'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:'.9rem',fontWeight:700}}>{prossimoAlloggio.voce}</div>
-                    <div style={{fontSize:'.78rem',color:'#7A6845',marginTop:3,display:'flex',alignItems:'center',gap:4}}><Clock size={11}/>{fmtDate(prossimoAlloggio.giorno)}{prossimoAlloggio.costo>0&&<span style={{marginLeft:4,color:'#3D5A2E',fontWeight:600}}>{fmtEur(prossimoAlloggio.costo)}</span>}</div>
+            {/* PROSSIMO ALLOGGIO */}
+            {prossimoAlloggio && (
+              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,padding:'14px 18px'}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
+                  <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim,display:'flex',alignItems:'center',gap:6}}>
+                    <Bed size={12} strokeWidth={2}/>Prossimo alloggio
                   </div>
                   {prossimoAlloggio.cancGratuita&&<CancBadge item={prossimoAlloggio}/>}
                 </div>
-                {prossimoAlloggio.note&&<div style={{fontSize:'.76rem',color:'#7A6845',fontStyle:'italic',marginTop:6}}>{prossimoAlloggio.note}</div>}
-              </div>
-            </div>
-          )}
-
-          {/* PROSSIMO GIORNO */}
-          {prossimoGiorno && (
-            <div style={{margin:'0 16px 16px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
-              <div style={{padding:'12px 16px 10px',fontSize:'.75rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',display:'flex',alignItems:'center',justifyContent:'space-between',borderBottom:'1px solid #F0E8D0'}}>
-                <div style={{display:'flex',alignItems:'center',gap:5}}><Calendar size={13} color="#7A6845"/>Prossimo giorno</div>
-                <button onClick={()=>setPage('itinerario')} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:'#C9992A',fontSize:'.75rem',fontWeight:600}}>Itinerario<ChevronRight size={13}/></button>
-              </div>
-              <div style={{padding:'12px 16px 8px'}}>
-                <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8}}>
-                  <div style={{background:'#1A1208',color:'#E8B84B',borderRadius:8,padding:'4px 10px',fontFamily:"'Playfair Display',serif",fontSize:'.9rem',fontWeight:700,lineHeight:1,textAlign:'center'}}>
-                    {fmtDate(prossimoGiorno.date)}<br/><small style={{fontFamily:"'DM Sans',sans-serif",fontSize:'.55rem',color:'#aaa',fontWeight:400}}>G{prossimoGiorno.day}</small>
-                  </div>
-                  <div>
-                    <div style={{fontSize:'.9rem',fontWeight:700}}>{prossimoGiorno.title}</div>
-                    <div style={{fontSize:'.75rem',color:'#7A6845',display:'flex',alignItems:'center',gap:3,marginTop:2}}><MapPin size={10}/>{prossimoGiorno.place}</div>
-                  </div>
+                <div style={{fontSize:14.5,fontWeight:600,color:T.text,letterSpacing:'-0.005em'}}>{prossimoAlloggio.voce}</div>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginTop:6,fontSize:12.5,color:T.textDim}}>
+                  <span style={{display:'flex',alignItems:'center',gap:4}}><Clock size={11}/>{fmtDate(prossimoAlloggio.giorno)}</span>
+                  {prossimoAlloggio.costo>0&&<span style={{color:T.success,fontWeight:600}}>{fmtEur(prossimoAlloggio.costo)}</span>}
                 </div>
-                {prossimoGiorno.activities.slice(0,3).map((a,i)=>(
-                  <div key={i} style={{display:'flex',gap:8,padding:'5px 0',borderTop:'1px solid #F0E8D0',alignItems:'flex-start'}}>
-                    <div style={{fontSize:'.7rem',fontWeight:700,color:'#C9992A',minWidth:38,display:'flex',alignItems:'center',gap:2,paddingTop:1}}><Clock size={9}/>{a.time}</div>
-                    <div style={{fontSize:'.88rem'}}>{a.type}</div>
-                    <div style={{fontSize:'.82rem',fontWeight:500,flex:1}}>{a.title}</div>
-                  </div>
-                ))}
-                {prossimoGiorno.activities.length>3&&<div style={{fontSize:'.72rem',color:'#aaa',paddingTop:6,textAlign:'center'}}>+{prossimoGiorno.activities.length-3} altre attività</div>}
+                {prossimoAlloggio.note&&<div style={{fontSize:12.5,color:T.textDim,fontStyle:'italic',marginTop:8,paddingTop:8,borderTop:`1px solid ${T.borderSoft}`}}>{prossimoAlloggio.note}</div>}
               </div>
-            </div>
-          )}
-          <div style={{height:16}}/>
+            )}
+
+            <div style={{height:24}}/>
+          </div>
         </div>
       )}
 
@@ -590,59 +713,91 @@ export default function App() {
           CHECKLIST
       ══════════════════════════════ */}
       {page==='checklist'&&(
-        <div style={S.page}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div><div style={S.hdrT}>Checklist</div><div style={S.hdrS}>{doneCount}/{data.items.length} completati</div></div>
-              <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                {searchBtn}
-                <button onClick={()=>setAddModal(true)} style={{background:'none',border:'1px solid #E8B84B',borderRadius:8,color:'#E8B84B',padding:'7px 12px',fontSize:'.82rem',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5}}><Plus size={14}/>Aggiungi</button>
-              </div>
+        <div style={PAGE_STYLE}>
+          <PageHeader
+            title="Checklist"
+            subtitle={`${doneCount} di ${data.items.length} completati · ${progress}%`}
+            action={
+              <>
+                <SearchBtn/>
+                <button onClick={()=>setAddModal(true)} style={{background:T.surfaceDark,border:'none',borderRadius:10,color:T.goldBright,padding:'0 14px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5,height:38,fontFamily:T.fontBody,letterSpacing:'-0.005em'}}>
+                  <Plus size={15}/>Aggiungi
+                </button>
+              </>
+            }
+          />
+
+          {/* progress bar */}
+          <div style={{padding:'2px 20px 12px'}}>
+            <div style={{background:T.surfaceAlt,borderRadius:99,height:4,overflow:'hidden'}}>
+              <div style={{width:`${progress}%`,height:'100%',background:`linear-gradient(90deg,${T.gold},${T.goldBright})`,transition:'width .6s'}}/>
             </div>
           </div>
-          <div style={{display:'flex',gap:8,padding:'10px 16px',overflowX:'auto',scrollbarWidth:'none',position:'sticky',top:58,background:'#FAF6EE',zIndex:40,borderBottom:'1px solid #D4C4A0'}}>
-            {['Tutto',...new Set(data.items.map(i=>i.cat))].map(c=>(
-              <button key={c} onClick={()=>setFilter(c)} style={{flexShrink:0,padding:'6px 14px',borderRadius:99,border:`1px solid ${filter===c?'#1A1208':'#D4C4A0'}`,background:filter===c?'#1A1208':'#fff',color:filter===c?'#E8B84B':'#7A6845',fontFamily:"'DM Sans',sans-serif",fontSize:'.78rem',fontWeight:600,cursor:'pointer'}}>{c}</button>
-            ))}
+
+          {/* filter chips */}
+          <div style={{display:'flex',gap:8,padding:'4px 20px 16px',overflowX:'auto',position:'sticky',top:75,background:T.bg,zIndex:40}}>
+            {['Tutto',...new Set(data.items.map(i=>i.cat))].map(c=>{
+              const active = filter===c
+              return (
+                <button key={c} onClick={()=>setFilter(c)} style={{flexShrink:0,padding:'7px 14px',borderRadius:99,border:`1px solid ${active?T.surfaceDark:T.border}`,background:active?T.surfaceDark:T.surface,color:active?T.goldBright:T.text,fontFamily:T.fontBody,fontSize:13,fontWeight:600,cursor:'pointer',letterSpacing:'-0.005em',transition:'all .15s'}}>{c}</button>
+              )
+            })}
           </div>
-          {SECTIONS.map(sec=>{
-            let items=data.items.filter(i=>i.section===sec)
-            if(filter!=='Tutto') items=items.filter(i=>i.cat===filter)
-            if(!items.length) return null
-            items=[...items].sort((a,b)=>{ if(a.done!==b.done) return a.done?1:-1; if(!a.giorno&&!b.giorno) return 0; if(!a.giorno) return 1; if(!b.giorno) return -1; return a.giorno.localeCompare(b.giorno) })
-            return (
-              <div key={sec}>
-                <div style={{padding:'12px 16px 5px',fontSize:'.67rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',display:'flex',alignItems:'center',gap:5}}><SectionIcon sec={sec}/>{sec}</div>
-                {items.map(i=>(
-                  <div key={i.id} style={{...S.card,opacity:i.done?.5:1}}>
-                    <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 10px 12px 12px'}}>
-                      <button onClick={()=>toggleItem(i.id)} style={{width:28,height:28,borderRadius:8,border:`2px solid ${i.done?'#3D5A2E':'#D4C4A0'}`,background:i.done?'#3D5A2E':'#fff',color:'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
-                        {i.done&&<CheckSquare size={14} strokeWidth={3}/>}
-                      </button>
-                      <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontSize:'.88rem',fontWeight:600,lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textDecoration:i.done?'line-through':'none'}}>{i.voce}</div>
-                        <div style={{display:'flex',gap:6,marginTop:3,flexWrap:'wrap'}}>
-                          {i.costo>0&&<span style={{fontSize:'.8rem',fontWeight:700,color:'#3D5A2E'}}>{fmtEur(i.costo)}</span>}
-                          {i.giorno&&<span style={{fontSize:'.73rem',color:'#7A6845',display:'flex',alignItems:'center',gap:2}}><Clock size={10}/>{fmtDate(i.giorno)}</span>}
-                        </div>
-                      </div>
-                      <div style={{display:'flex',gap:4}}>
-                        <button onClick={()=>openEdit(i)} style={{...S.iBtn,width:34,height:34}}><Pencil size={14} color="#7A6845"/></button>
-                        <button onClick={()=>deleteItem(i.id)} style={{...S.iBtn,width:34,height:34}}><Trash2 size={14} color="#7A6845"/></button>
-                      </div>
+
+          <div style={{padding:'0 20px',display:'flex',flexDirection:'column',gap:18}}>
+            {SECTIONS.map(sec=>{
+              let items=data.items.filter(i=>i.section===sec)
+              if(filter!=='Tutto') items=items.filter(i=>i.cat===filter)
+              if(!items.length) return null
+              const total = items.length
+              const done = items.filter(i=>i.done).length
+              items=[...items].sort((a,b)=>{ if(a.done!==b.done) return a.done?1:-1; if(!a.giorno&&!b.giorno) return 0; if(!a.giorno) return 1; if(!b.giorno) return -1; return a.giorno.localeCompare(b.giorno) })
+              return (
+                <div key={sec}>
+                  <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,paddingLeft:2}}>
+                    <div style={{width:24,height:24,borderRadius:7,background:T.surfaceAlt,color:T.terra,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <SectionIcon sec={sec} size={13}/>
                     </div>
-                    <div style={{borderTop:'1px solid #F0E8D0',padding:'7px 12px 8px',display:'flex',flexWrap:'wrap',gap:5}}>
-                      <CatBadge cat={i.cat}/><QBadge q={i.quando}/><CancBadge item={i}/>
-                    </div>
-                    {i.note&&<div style={{fontSize:'.75rem',color:'#7A6845',fontStyle:'italic',padding:'0 12px 9px',lineHeight:1.4}}>{i.note}</div>}
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim}}>{sec}</div>
+                    <div style={{fontSize:11,color:T.textFaint,fontVariantNumeric:'tabular-nums'}}>{done}/{total}</div>
                   </div>
-                ))}
-              </div>
-            )
-          })}
-          <div style={{margin:'8px 16px 16px',background:'#1A1208',borderRadius:14,padding:'15px 18px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-            <div><div style={{fontSize:'.72rem',color:'#aaa'}}>Totale / persona</div><div style={{fontSize:'.68rem',color:'#777',marginTop:1}}>x2 = {fmtEur(total*2)} coppia</div></div>
-            <div style={{fontFamily:"'Playfair Display',serif",fontSize:'1.55rem',fontWeight:700,color:'#E8B84B'}}>{fmtEur(total)}</div>
+                  <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,overflow:'hidden'}}>
+                    {items.map((i,idx)=>(
+                      <div key={i.id} style={{opacity:i.done?.55:1,borderBottom:idx<items.length-1?`1px solid ${T.borderSoft}`:'none'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:12,padding:'13px 14px'}}>
+                          <button onClick={()=>toggleItem(i.id)} style={{width:24,height:24,borderRadius:8,border:`2px solid ${i.done?T.success:T.borderStrong}`,background:i.done?T.success:'transparent',color:'#fff',cursor:'pointer',flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center',transition:'all .15s',padding:0}}>
+                            {i.done&&<Check size={13} strokeWidth={3}/>}
+                          </button>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:14,fontWeight:600,lineHeight:1.3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',textDecoration:i.done?'line-through':'none',color:T.text,letterSpacing:'-0.005em'}}>{i.voce}</div>
+                            <div style={{display:'flex',gap:6,marginTop:4,flexWrap:'wrap',alignItems:'center'}}>
+                              {i.costo>0&&<span style={{fontSize:12.5,fontWeight:600,color:T.success,fontVariantNumeric:'tabular-nums'}}>{fmtEur(i.costo)}</span>}
+                              {i.giorno&&<span style={{fontSize:11.5,color:T.textDim,display:'flex',alignItems:'center',gap:3}}><Clock size={10}/>{fmtDate(i.giorno)}</span>}
+                            </div>
+                          </div>
+                          <div style={{display:'flex',gap:2}}>
+                            <button onClick={()=>openEdit(i)} style={{border:'none',background:'transparent',borderRadius:8,cursor:'pointer',width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center'}}><Pencil size={14} color={T.textDim}/></button>
+                            <button onClick={()=>deleteItem(i.id)} style={{border:'none',background:'transparent',borderRadius:8,cursor:'pointer',width:32,height:32,display:'flex',alignItems:'center',justifyContent:'center'}}><Trash2 size={14} color={T.textFaint}/></button>
+                          </div>
+                        </div>
+                        <div style={{padding:'0 14px 11px',display:'flex',flexWrap:'wrap',gap:5}}>
+                          <CatBadge cat={i.cat} size="sm"/><QBadge q={i.quando}/><CancBadge item={i}/>
+                        </div>
+                        {i.note&&<div style={{fontSize:12.5,color:T.textDim,fontStyle:'italic',padding:'0 14px 11px',lineHeight:1.5}}>{i.note}</div>}
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )
+            })}
+          </div>
+
+          <div style={{margin:'20px 20px 16px',background:T.surfaceDark,borderRadius:18,padding:'18px 20px',display:'flex',justifyContent:'space-between',alignItems:'flex-end'}}>
+            <div>
+              <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:600}}>Totale a persona</div>
+              <div style={{fontSize:11,color:'#7C7058',marginTop:4}}>Coppia: {fmtEur(total*2)}</div>
+            </div>
+            <div style={{fontFamily:T.fontDisplay,fontSize:30,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1}}>{fmtEur(total)}</div>
           </div>
           <div style={{height:80}}/>
         </div>
@@ -652,61 +807,59 @@ export default function App() {
           MAPPA
       ══════════════════════════════ */}
       {page==='mappa'&&(
-        <div style={{...S.page,overflow:'hidden',display:'flex',flexDirection:'column'}}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div><div style={S.hdrT}>Mappa Itinerario</div><div style={S.hdrS}>Perù 2026 · clicca un luogo per i dettagli</div></div>
-              {searchBtn}
-            </div>
-          </div>
+        <div style={{...PAGE_STYLE,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+          <PageHeader
+            title="Mappa"
+            subtitle="Tocca un luogo per i dettagli"
+            action={<SearchBtn/>}
+          />
           <div style={{flex:1,position:'relative',minHeight:0}}>
             <MapLeafletDynamic
               itinerary={data.itinerary}
               onLocationClick={(place, days) => setMapLocation({place, days})}
             />
-            {/* LOCATION PANEL */}
             {mapLocation && (
-              <div style={{position:'absolute',bottom:0,left:0,right:0,background:'#FAF6EE',borderRadius:'20px 20px 0 0',maxHeight:'62%',overflowY:'auto',boxShadow:'0 -6px 24px rgba(0,0,0,.22)',zIndex:1000}}>
-                <div style={{width:36,height:4,background:'#D4C4A0',borderRadius:99,margin:'12px auto 8px'}}/>
-                <div style={{padding:'0 16px 12px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:'1px solid #D4C4A0'}}>
+              <div style={{position:'absolute',bottom:0,left:0,right:0,background:T.bg,borderRadius:'24px 24px 0 0',maxHeight:'62%',overflowY:'auto',boxShadow:'0 -10px 40px rgba(0,0,0,.18)',zIndex:1000,animation:'fadeIn .2s ease-out'}}>
+                <div style={{width:40,height:4,background:T.borderStrong,borderRadius:99,margin:'12px auto 10px'}}/>
+                <div style={{padding:'0 20px 14px',display:'flex',justifyContent:'space-between',alignItems:'center',borderBottom:`1px solid ${T.border}`}}>
                   <div>
-                    <div style={{fontFamily:"'Playfair Display',serif",fontSize:'1.05rem',fontWeight:700}}>{mapLocation.place}</div>
-                    <div style={{fontSize:'.72rem',color:'#7A6845',marginTop:2}}>{mapLocation.days.length} {mapLocation.days.length===1?'giorno':'giorni'}</div>
+                    <div style={{fontFamily:T.fontDisplay,fontSize:20,fontWeight:700,color:T.text,letterSpacing:'-0.015em'}}>{mapLocation.place}</div>
+                    <div style={{fontSize:12,color:T.textDim,marginTop:3}}>{mapLocation.days.length} {mapLocation.days.length===1?'giorno':'giorni'} in questa tappa</div>
                   </div>
-                  <button onClick={()=>setMapLocation(null)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center'}}><X size={18} color="#7A6845"/></button>
+                  <button onClick={()=>setMapLocation(null)} style={{background:T.surface,border:`1px solid ${T.border}`,cursor:'pointer',width:34,height:34,borderRadius:10,display:'flex',alignItems:'center',justifyContent:'center'}}><X size={16} color={T.textDim}/></button>
                 </div>
                 {mapLocation.days.map(day=>(
-                  <div key={day.id}>
-                    <div style={{padding:'10px 16px 6px',display:'flex',gap:10,alignItems:'center',borderBottom:'1px solid #F0E8D0'}}>
-                      <div style={{background:'#1A1208',color:'#E8B84B',borderRadius:8,padding:'3px 9px',fontFamily:"'Playfair Display',serif",fontSize:'.82rem',fontWeight:700,flexShrink:0}}>G{day.day}</div>
-                      <div style={{flex:1}}>
-                        <div style={{fontSize:'.88rem',fontWeight:700}}>{day.title}</div>
-                        <div style={{fontSize:'.7rem',color:'#7A6845',marginTop:1}}>{fmtDate(day.date)}{day.hotel&&<> · {day.hotel}</>}</div>
+                  <div key={day.id} style={{padding:'14px 20px',borderBottom:`1px solid ${T.borderSoft}`}}>
+                    <div style={{display:'flex',gap:12,alignItems:'center',marginBottom:8}}>
+                      <div style={{background:T.surfaceDark,color:T.goldBright,borderRadius:10,padding:'4px 9px',fontFamily:T.fontDisplay,fontSize:14,fontWeight:700,flexShrink:0,letterSpacing:'-0.01em'}}>G{day.day}</div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontFamily:T.fontDisplay,fontSize:15,fontWeight:700,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
+                        <div style={{fontSize:11.5,color:T.textDim,marginTop:2}}>{fmtDate(day.date)}{day.hotel&&<> · {day.hotel}</>}</div>
                       </div>
                     </div>
                     {(() => {
                       const wd = getWeatherForDay(day)
                       if (!wd) return null
                       return (
-                        <div style={{padding:'6px 16px',background:'#F8F4EC',display:'flex',alignItems:'center',gap:8,fontSize:'.76rem',color:'#7A6845',borderBottom:'1px solid #F0E8D0'}}>
-                          <span style={{fontSize:'1rem'}}>{wEmoji(wd.code)}</span>
-                          <span style={{fontWeight:600}}>{wd.maxTemp}°/{wd.minTemp}°</span>
+                        <div style={{display:'flex',alignItems:'center',gap:8,fontSize:12,color:T.textDim,marginBottom:8,padding:'6px 10px',background:T.surfaceAlt,borderRadius:8}}>
+                          <span style={{fontSize:15}}>{wEmoji(wd.code)}</span>
+                          <span style={{fontWeight:600,color:T.text}}>{wd.maxTemp}°/{wd.minTemp}°</span>
                           <span>{wDesc(wd.code)}</span>
                           {wd.precip>0&&<span>💧{wd.precip}mm</span>}
-                          <span style={{marginLeft:'auto',fontSize:'.64rem',color:'#B09060'}}>lug '25</span>
+                          <span style={{marginLeft:'auto',fontSize:10,color:T.textFaint,letterSpacing:'.04em'}}>storico</span>
                         </div>
                       )
                     })()}
                     {day.activities.map((a,i)=>(
-                      <div key={i} style={{display:'flex',gap:10,padding:'7px 16px',borderBottom:'1px solid #F8F4EC',alignItems:'center'}}>
-                        <div style={{fontSize:'.68rem',fontWeight:700,color:'#C9992A',minWidth:36}}>{a.time}</div>
-                        <div style={{fontSize:'.88rem'}}>{a.type}</div>
-                        <div style={{fontSize:'.82rem',fontWeight:500,flex:1}}>{a.title}</div>
+                      <div key={i} style={{display:'flex',gap:10,padding:'5px 0',alignItems:'center'}}>
+                        <div style={{fontSize:11,fontWeight:600,color:T.gold,minWidth:36,fontVariantNumeric:'tabular-nums'}}>{a.time}</div>
+                        <div style={{fontSize:14}}>{a.type}</div>
+                        <div style={{fontSize:13,fontWeight:500,flex:1,color:T.text}}>{a.title}</div>
                       </div>
                     ))}
                   </div>
                 ))}
-                <div style={{height:16}}/>
+                <div style={{height:20}}/>
               </div>
             )}
           </div>
@@ -717,88 +870,95 @@ export default function App() {
           ITINERARIO
       ══════════════════════════════ */}
       {page==='itinerario'&&(
-        <div style={S.page}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={S.hdrT}>Itinerario</div>
-              <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                {searchBtn}
-                <button onClick={()=>setDayModal(true)} style={{background:'none',border:'none',color:'#E8B84B',cursor:'pointer',padding:'4px 0 4px 6px',display:'flex',alignItems:'center'}}><Plus size={20}/></button>
-              </div>
-            </div>
-          </div>
-          <div style={{height:10}}/>
-          {[...data.itinerary].sort((a,b)=>a.day-b.day).map(day=>{
-            const wd = getWeatherForDay(day)
-            return (
-              <div key={day.id} style={{margin:'0 16px 10px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
-                <div style={{display:'flex',alignItems:'stretch',cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
-                  <div style={{background:'#1A1208',color:'#E8B84B',fontFamily:"'Playfair Display',serif",fontSize:'1.05rem',fontWeight:700,padding:'13px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:58,lineHeight:1,gap:2}}>
-                    {fmtDate(day.date)}<small style={{fontFamily:"'DM Sans',sans-serif",fontSize:'.58rem',color:'#aaa',fontWeight:400,textTransform:'uppercase'}}>G{day.day}</small>
-                  </div>
-                  <div style={{flex:1,padding:'12px 10px',minWidth:0}}>
-                    <div style={{display:'flex',alignItems:'center',gap:6}}>
-                      <div style={{fontSize:'.9rem',fontWeight:700,lineHeight:1.3,flex:1}}>{day.title}</div>
-                      <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',display:'flex',alignItems:'center'}}><Pencil size={13} color="#C9992A"/></button>
-                      <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',display:'flex',alignItems:'center'}}><Trash2 size={13} color="#ccc"/></button>
+        <div style={PAGE_STYLE}>
+          <PageHeader
+            title="Itinerario"
+            subtitle={`${data.itinerary.length} giorni · ${data.itinerary.reduce((s,d)=>s+d.activities.length,0)} attività`}
+            action={
+              <>
+                <SearchBtn/>
+                <button onClick={()=>setDayModal(true)} style={{background:T.surfaceDark,border:'none',borderRadius:10,color:T.goldBright,width:38,height:38,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><Plus size={18}/></button>
+              </>
+            }
+          />
+          <div style={{padding:'14px 20px',display:'flex',flexDirection:'column',gap:8}}>
+            {[...data.itinerary].sort((a,b)=>a.day-b.day).map(day=>{
+              const wd = getWeatherForDay(day)
+              const expanded = openDays.has(day.id)
+              return (
+                <div key={day.id} style={{background:T.surface,borderRadius:16,border:`1px solid ${expanded?T.borderStrong:T.border}`,overflow:'hidden',transition:'border-color .15s'}}>
+                  <div style={{display:'flex',alignItems:'stretch',cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
+                    <div style={{background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontDisplay,fontWeight:700,padding:'14px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:62,lineHeight:1}}>
+                      <div style={{fontSize:16,letterSpacing:'-0.01em'}}>{fmtDate(day.date)}</div>
+                      <div style={{fontFamily:T.fontBody,fontSize:9,color:'#9C8F73',fontWeight:500,marginTop:4,letterSpacing:'.08em'}}>G{day.day}</div>
                     </div>
-                    <div style={{fontSize:'.73rem',color:'#7A6845',marginTop:3,display:'flex',gap:8,flexWrap:'wrap'}}>
-                      <span style={{display:'flex',alignItems:'center',gap:3}}><MapPin size={10}/>{day.place}</span>
-                      {day.hotel&&<span style={{display:'flex',alignItems:'center',gap:3}}><Bed size={10}/>{day.hotel}</span>}
-                      {wd&&<span style={{display:'flex',alignItems:'center',gap:2}}>{wEmoji(wd.code)}{wd.maxTemp}°/{wd.minTemp}°</span>}
+                    <div style={{flex:1,padding:'13px 12px',minWidth:0}}>
+                      <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
+                        <div style={{fontFamily:T.fontDisplay,fontSize:15.5,fontWeight:700,lineHeight:1.25,flex:1,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
+                        <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={13}/></button>
+                        <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={13}/></button>
+                      </div>
+                      <div style={{fontSize:11.5,color:T.textDim,marginTop:4,display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
+                        <span style={{display:'flex',alignItems:'center',gap:3}}><MapPin size={10}/>{day.place}</span>
+                        {day.hotel&&<span style={{display:'flex',alignItems:'center',gap:3}}><Bed size={10}/>{day.hotel}</span>}
+                        {wd&&<span style={{display:'flex',alignItems:'center',gap:3,fontWeight:600,color:T.text}}>{wEmoji(wd.code)}{wd.maxTemp}°/{wd.minTemp}°</span>}
+                      </div>
                     </div>
+                    <div style={{padding:'14px 14px',display:'flex',alignItems:'center',color:T.textDim,transition:'transform .2s',transform:expanded?'rotate(180deg)':'none'}}><ChevronDown size={16}/></div>
                   </div>
-                  <div style={{padding:12,display:'flex',alignItems:'center',color:'#7A6845',transition:'transform .2s',transform:openDays.has(day.id)?'rotate(180deg)':'none'}}><ChevronDown size={16}/></div>
-                </div>
-                {openDays.has(day.id)&&(
-                  <div style={{borderTop:'1px solid #F0E8D0'}}>
-                    {/* Weather row when expanded */}
-                    {wd&&(
-                      <div style={{padding:'8px 14px',background:'#F8F4EC',borderBottom:'1px solid #F0E8D0',display:'flex',alignItems:'center',gap:10,fontSize:'.78rem',color:'#7A6845'}}>
-                        <span style={{fontSize:'1.1rem'}}>{wEmoji(wd.code)}</span>
-                        <span style={{fontWeight:600}}>{wd.maxTemp}°/{wd.minTemp}°</span>
-                        <span>{wDesc(wd.code)}</span>
-                        {wd.precip>0&&<span>💧{wd.precip}mm</span>}
-                        <span style={{marginLeft:'auto',fontSize:'.66rem',color:'#B09060'}}>media lug '25</span>
-                      </div>
-                    )}
-                    {day.activities.map((a,i)=>(
-                      <div key={i} style={{display:'flex',gap:10,padding:'10px 14px',borderBottom:'1px solid #F0E8D0',alignItems:'flex-start'}}>
-                        <div style={{fontSize:'.7rem',fontWeight:700,color:'#C9992A',minWidth:36,paddingTop:2,display:'flex',alignItems:'center',gap:2}}><Clock size={9}/>{a.time||'—'}</div>
-                        <div style={{fontSize:'.95rem',paddingTop:1}}>{a.type}</div>
-                        <div style={{flex:1}}><div style={{fontSize:'.84rem',fontWeight:600,lineHeight:1.3}}>{a.title}</div>{a.note&&<div style={{fontSize:'.74rem',color:'#7A6845',marginTop:1}}>{a.note}</div>}</div>
-                        <button onClick={()=>openEditActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',flexShrink:0,display:'flex',alignItems:'center',paddingTop:4}}><Pencil size={12} color="#C9992A"/></button>
-                        <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',flexShrink:0,display:'flex',alignItems:'center',paddingTop:4}}><Trash2 size={13} color="#ccc"/></button>
-                      </div>
-                    ))}
-                    {day.notes&&<div style={{background:'#FFFBEB',padding:'9px 14px',fontSize:'.78rem',color:'#92400E',borderTop:'1px solid #F0E8D0'}}>📝 {day.notes}</div>}
-                    {/* documenti collegati */}
-                    {(()=>{
-                      const linked = (data.documenti||[]).filter(d=>d.dayId===day.id)
-                      if (!linked.length) return null
-                      return (
-                        <div style={{borderTop:'1px solid #F0E8D0',background:'#F8F4EC',padding:'8px 14px'}}>
-                          <div style={{fontSize:'.66rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:'#7A6845',marginBottom:6,display:'flex',alignItems:'center',gap:4}}><FolderOpen size={10}/>Documenti allegati</div>
-                          {linked.map(doc=>(
-                            <div key={doc.id} style={{display:'flex',alignItems:'center',gap:8,padding:'4px 0',borderBottom:'1px solid #F0E8D0'}}>
-                              <div style={{width:24,height:24,borderRadius:6,background:doc.type==='link'?'#DBEAFE':'#EDE9FE',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                                {doc.type==='link'?<Link2 size={11} color="#1E40AF"/>:<File size={11} color="#5B21B6"/>}
-                              </div>
-                              <span style={{flex:1,fontSize:'.8rem',fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{doc.name}</span>
-                              <button onClick={()=>openDoc(doc)} style={{background:'none',border:'none',cursor:'pointer',padding:3,display:'flex',alignItems:'center',borderRadius:6,flexShrink:0}}>
-                                {doc.type==='link'?<ExternalLink size={13} color="#1E40AF"/>:<Download size={13} color="#5B21B6"/>}
-                              </button>
-                            </div>
-                          ))}
+                  {expanded&&(
+                    <div style={{borderTop:`1px solid ${T.borderSoft}`}}>
+                      {wd&&(
+                        <div style={{padding:'10px 16px',background:T.surfaceAlt,display:'flex',alignItems:'center',gap:10,fontSize:12.5,color:T.textDim}}>
+                          <span style={{fontSize:16}}>{wEmoji(wd.code)}</span>
+                          <span style={{fontWeight:600,color:T.text,fontVariantNumeric:'tabular-nums'}}>{wd.maxTemp}°/{wd.minTemp}°</span>
+                          <span>{wDesc(wd.code)}</span>
+                          {wd.precip>0&&<span>💧{wd.precip}mm</span>}
+                          <span style={{marginLeft:'auto',fontSize:10,color:T.textFaint,letterSpacing:'.04em',textTransform:'uppercase'}}>media lug '25</span>
                         </div>
-                      )
-                    })()}
-                    <button onClick={()=>setActModal(day.id)} style={{width:'100%',background:'none',border:'none',borderTop:'1px dashed #D4C4A0',padding:11,fontFamily:"'DM Sans',sans-serif",fontSize:'.8rem',color:'#7A6845',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:5}}><Plus size={13}/>Aggiungi attività</button>
-                  </div>
-                )}
-              </div>
-            )
-          })}
+                      )}
+                      {day.activities.map((a,i)=>(
+                        <div key={i} style={{display:'flex',gap:12,padding:'11px 16px',borderBottom:`1px solid ${T.borderSoft}`,alignItems:'flex-start'}}>
+                          <div style={{fontSize:11.5,fontWeight:700,color:T.gold,minWidth:38,paddingTop:3,display:'flex',alignItems:'center',gap:2,fontVariantNumeric:'tabular-nums'}}>{a.time||'—'}</div>
+                          <div style={{fontSize:16,paddingTop:0,lineHeight:1.2}}>{a.type}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:13.5,fontWeight:600,lineHeight:1.35,color:T.text,letterSpacing:'-0.005em'}}>{a.title}</div>
+                            {a.note&&<div style={{fontSize:12,color:T.textDim,marginTop:2}}>{a.note}</div>}
+                          </div>
+                          <button onClick={()=>openEditActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:2,flexShrink:0,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={12}/></button>
+                          <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:2,flexShrink:0,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={12}/></button>
+                        </div>
+                      ))}
+                      {day.notes&&<div style={{background:T.warningSoft,padding:'10px 16px',fontSize:12.5,color:T.warning,borderTop:`1px solid ${T.borderSoft}`,display:'flex',gap:6,alignItems:'flex-start'}}>📝 <span>{day.notes}</span></div>}
+                      {(()=>{
+                        const linked = (data.documenti||[]).filter(d=>d.dayId===day.id)
+                        if (!linked.length) return null
+                        return (
+                          <div style={{borderTop:`1px solid ${T.borderSoft}`,background:T.surfaceAlt,padding:'10px 16px'}}>
+                            <div style={{fontSize:10,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,marginBottom:8,display:'flex',alignItems:'center',gap:5}}><FolderOpen size={11}/>Documenti allegati</div>
+                            <div style={{display:'flex',flexDirection:'column',gap:6}}>
+                              {linked.map(doc=>(
+                                <div key={doc.id} style={{display:'flex',alignItems:'center',gap:10,padding:'7px 10px',background:T.surface,border:`1px solid ${T.border}`,borderRadius:10}}>
+                                  <div style={{width:26,height:26,borderRadius:7,background:doc.type==='link'?T.infoSoft:'#F3E8FF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                                    {doc.type==='link'?<Link2 size={12} color={T.info}/>:<File size={12} color="#7E22CE"/>}
+                                  </div>
+                                  <span style={{flex:1,fontSize:13,fontWeight:500,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>{doc.name}</span>
+                                  <button onClick={()=>openDoc(doc)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center',color:doc.type==='link'?T.info:'#7E22CE',flexShrink:0}}>
+                                    {doc.type==='link'?<ExternalLink size={13}/>:<Download size={13}/>}
+                                  </button>
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )
+                      })()}
+                      <button onClick={()=>setActModal(day.id)} style={{width:'100%',background:'none',border:'none',borderTop:`1px dashed ${T.borderStrong}`,padding:'12px',fontFamily:T.fontBody,fontSize:13,color:T.textDim,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontWeight:500}}><Plus size={14}/>Aggiungi attività</button>
+                    </div>
+                  )}
+                </div>
+              )
+            })}
+          </div>
           <div style={{height:80}}/>
         </div>
       )}
@@ -807,57 +967,72 @@ export default function App() {
           BUDGET
       ══════════════════════════════ */}
       {page==='budget'&&(
-        <div style={S.page}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={S.hdrT}>Budget</div>
-              {searchBtn}
+        <div style={PAGE_STYLE}>
+          <PageHeader
+            title="Budget"
+            subtitle="Spese stimate e ripartizione"
+            action={<SearchBtn/>}
+          />
+          <div style={{padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
+            <div style={{background:T.surfaceDark,borderRadius:22,padding:'22px 22px 24px',color:'#fff',position:'relative',overflow:'hidden'}}>
+              <div style={{position:'absolute',top:-40,right:-40,width:140,height:140,borderRadius:'50%',background:`radial-gradient(circle,${T.gold}30,transparent 70%)`}}/>
+              <div style={{position:'relative'}}>
+                <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:600,marginBottom:6}}>Budget a persona</div>
+                <div style={{fontFamily:T.fontDisplay,fontSize:42,fontWeight:700,color:T.goldBright,lineHeight:1,letterSpacing:'-0.03em'}}>{fmtEur(total)}</div>
+                <div style={{fontSize:12,color:'#A89B7E',marginTop:6}}>Coppia: {fmtEur(total*2)}</div>
+              </div>
             </div>
-          </div>
-          <div style={{margin:'14px 16px',background:'linear-gradient(135deg,#1A1208,#2A1A08)',borderRadius:16,padding:20,color:'#fff'}}>
-            <div style={{fontSize:'.7rem',color:'#aaa',textTransform:'uppercase',letterSpacing:'.07em',marginBottom:4}}>Budget totale / persona</div>
-            <div style={{fontFamily:"'Playfair Display',serif",fontSize:'2.1rem',fontWeight:700,color:'#E8B84B',lineHeight:1}}>{fmtEur(total)}</div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:'10px 8px',marginTop:14}}>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
               {[
-                {v:fmtEur(pagato),l:'Già pagato',c:'#86EFAC',sub:'definitivo'},
-                {v:fmtEur(cancConf),l:'Canc. gratuita',c:'#FCD34D',sub:'ancora cancellabile'},
-                {v:fmtEur(total-spent),l:'Da prenotare',c:'#FDA4AF',sub:'non ancora fatto'},
-                {v:fmtEur(total*2),l:'Totale coppia',c:'#fff',sub:'entrambi'},
+                {v:fmtEur(pagato),    l:'Già pagato',     dot:T.success, sub:'definitivo'},
+                {v:fmtEur(cancConf),  l:'Cancellabile',   dot:T.warning, sub:'ancora annullabile'},
+                {v:fmtEur(total-spent),l:'Da prenotare', dot:T.danger,  sub:'da fare'},
+                {v:fmtEur(total*2),   l:'Coppia',        dot:T.gold,    sub:'entrambi'},
               ].map((st,i)=>(
-                <div key={i} style={{background:'rgba(255,255,255,.08)',borderRadius:10,padding:'10px 12px'}}>
-                  <div style={{fontSize:'1rem',fontWeight:700,color:st.c}}>{st.v}</div>
-                  <div style={{fontSize:'.72rem',color:'#E8B84B',marginTop:1,fontWeight:600}}>{st.l}</div>
-                  <div style={{fontSize:'.62rem',color:'#888',marginTop:1}}>{st.sub}</div>
+                <div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:'14px 16px'}}>
+                  <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
+                    <div style={{width:7,height:7,borderRadius:99,background:st.dot}}/>
+                    <div style={{fontSize:11,fontWeight:600,color:T.textDim,textTransform:'uppercase',letterSpacing:'.05em'}}>{st.l}</div>
+                  </div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:20,fontWeight:700,color:T.text,letterSpacing:'-0.015em',lineHeight:1}}>{st.v}</div>
+                  <div style={{fontSize:11,color:T.textFaint,marginTop:4}}>{st.sub}</div>
                 </div>
               ))}
             </div>
-          </div>
-          {(()=>{
-            const byCat:{[k:string]:{b:number,p:number,c:number}}={}
-            data.items.forEach(i=>{ if(!byCat[i.cat]) byCat[i.cat]={b:0,p:0,c:0}; byCat[i.cat].b+=i.costo; if(i.done&&!i.cancGratuita) byCat[i.cat].p+=i.costo; if(i.done&&i.cancGratuita) byCat[i.cat].c+=i.costo })
-            return (
-              <div style={{margin:'0 16px 12px',background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
-                <div style={{padding:'11px 14px 9px',fontSize:'.72rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.07em',color:'#7A6845',borderBottom:'1px solid #F0E8D0'}}>Per categoria</div>
-                {Object.entries(byCat).map(([cat,v])=>(
-                  <div key={cat} style={{padding:'10px 14px',borderBottom:'1px solid #F0E8D0'}}>
-                    <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:v.p>0||v.c>0?5:0}}>
-                      <div style={{width:8,height:8,borderRadius:'50%',background:CAT_COLORS[cat]||'#999',flexShrink:0}}/>
-                      <div style={{fontSize:'.84rem',fontWeight:600,flex:1}}>{cat}</div>
-                      <div style={{fontSize:'.86rem',fontWeight:700}}>{fmtEur(v.b)}</div>
-                      <div style={{fontSize:'.7rem',color:'#7A6845',background:'#F0E8D0',padding:'2px 7px',borderRadius:99}}>{Math.round(v.b/total*100)}%</div>
-                    </div>
-                    {(v.p>0||v.c>0)&&(
-                      <div style={{display:'flex',gap:6,paddingLeft:18,flexWrap:'wrap'}}>
-                        {v.p>0&&<span style={{fontSize:'.7rem',background:'#DCFCE7',color:'#166534',padding:'2px 8px',borderRadius:99,display:'flex',alignItems:'center',gap:3}}><CheckSquare size={9}/>pagato {fmtEur(v.p)}</span>}
-                        {v.c>0&&<span style={{fontSize:'.7rem',background:'#FEF9C3',color:'#713F12',padding:'2px 8px',borderRadius:99}}>canc. {fmtEur(v.c)}</span>}
+            {(()=>{
+              const byCat: {[k:string]:{b:number,p:number,c:number}}={}
+              data.items.forEach(i=>{ if(!byCat[i.cat]) byCat[i.cat]={b:0,p:0,c:0}; byCat[i.cat].b+=i.costo; if(i.done&&!i.cancGratuita) byCat[i.cat].p+=i.costo; if(i.done&&i.cancGratuita) byCat[i.cat].c+=i.costo })
+              const entries = Object.entries(byCat).sort((a,b)=>b[1].b-a[1].b)
+              return (
+                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,overflow:'hidden'}}>
+                  <div style={{padding:'14px 18px 10px',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim,borderBottom:`1px solid ${T.borderSoft}`}}>Per categoria</div>
+                  {entries.map(([cat,v],idx)=>{
+                    const pct = Math.round(v.b/total*100)
+                    return (
+                      <div key={cat} style={{padding:'12px 18px',borderBottom:idx<entries.length-1?`1px solid ${T.borderSoft}`:'none'}}>
+                        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8}}>
+                          <div style={{width:8,height:8,borderRadius:'50%',background:CAT_COLORS[cat]||'#999',flexShrink:0}}/>
+                          <div style={{fontSize:13.5,fontWeight:600,flex:1,color:T.text,letterSpacing:'-0.005em'}}>{cat}</div>
+                          <div style={{fontSize:13.5,fontWeight:700,color:T.text,fontVariantNumeric:'tabular-nums'}}>{fmtEur(v.b)}</div>
+                          <div style={{fontSize:10.5,color:T.textDim,background:T.surfaceAlt,padding:'2px 7px',borderRadius:99,fontWeight:600,minWidth:32,textAlign:'center'}}>{pct}%</div>
+                        </div>
+                        <div style={{background:T.surfaceAlt,borderRadius:99,height:3,overflow:'hidden',marginBottom:(v.p>0||v.c>0)?8:0}}>
+                          <div style={{width:`${pct}%`,height:'100%',background:CAT_COLORS[cat]||T.gold,transition:'width .6s'}}/>
+                        </div>
+                        {(v.p>0||v.c>0)&&(
+                          <div style={{display:'flex',gap:6,flexWrap:'wrap'}}>
+                            {v.p>0&&<span style={{fontSize:10.5,background:T.successSoft,color:T.success,padding:'2px 7px',borderRadius:99,fontWeight:600,display:'flex',alignItems:'center',gap:3}}><Check size={9} strokeWidth={3}/>{fmtEur(v.p)}</span>}
+                            {v.c>0&&<span style={{fontSize:10.5,background:T.warningSoft,color:T.warning,padding:'2px 7px',borderRadius:99,fontWeight:600}}>canc. {fmtEur(v.c)}</span>}
+                          </div>
+                        )}
                       </div>
-                    )}
-                  </div>
-                ))}
-              </div>
-            )
-          })()}
-          <div style={{height:80}}/>
+                    )
+                  })}
+                </div>
+              )
+            })()}
+            <div style={{height:24}}/>
+          </div>
         </div>
       )}
 
@@ -865,64 +1040,63 @@ export default function App() {
           DOCUMENTI
       ══════════════════════════════ */}
       {page==='documenti'&&(
-        <div style={S.page}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div>
-                <div style={S.hdrT}>Documenti</div>
-                <div style={S.hdrS}>{(data.documenti||[]).length} file e link salvati</div>
-              </div>
-              <div style={{display:'flex',gap:6,alignItems:'center'}}>
-                {searchBtn}
-                <button onClick={()=>setDocModal(true)} style={{background:'none',border:'1px solid #E8B84B',borderRadius:8,color:'#E8B84B',padding:'7px 12px',fontSize:'.82rem',fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5}}><Plus size={14}/>Aggiungi</button>
-              </div>
-            </div>
-          </div>
-
+        <div style={PAGE_STYLE}>
+          <PageHeader
+            title="Documenti"
+            subtitle={`${(data.documenti||[]).length} elementi salvati`}
+            action={
+              <>
+                <SearchBtn/>
+                <button onClick={()=>setDocModal(true)} style={{background:T.surfaceDark,border:'none',borderRadius:10,color:T.goldBright,padding:'0 14px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5,height:38,fontFamily:T.fontBody}}><Plus size={15}/>Aggiungi</button>
+              </>
+            }
+          />
           {(data.documenti||[]).length === 0 ? (
-            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 32px',textAlign:'center',color:'#7A6845'}}>
-              <FolderOpen size={44} color="#D4C4A0"/>
-              <div style={{marginTop:16,fontSize:'.95rem',fontWeight:600,color:'#2C2012'}}>Nessun documento salvato</div>
-              <div style={{marginTop:6,fontSize:'.82rem',color:'#aaa',lineHeight:1.5}}>Aggiungi link di prenotazione,<br/>biglietti PDF o conferme</div>
-              <button onClick={()=>setDocModal(true)} style={{marginTop:20,background:'#1A1208',color:'#E8B84B',border:'none',borderRadius:12,padding:'12px 24px',fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:700,cursor:'pointer'}}>+ Aggiungi documento</button>
+            <div style={{display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'60px 32px 80px',textAlign:'center'}}>
+              <div style={{width:80,height:80,borderRadius:24,background:T.surfaceAlt,display:'flex',alignItems:'center',justifyContent:'center',marginBottom:18}}>
+                <FolderOpen size={36} color={T.borderStrong} strokeWidth={1.5}/>
+              </div>
+              <div style={{fontFamily:T.fontDisplay,fontSize:20,fontWeight:700,color:T.text,letterSpacing:'-0.015em'}}>Nessun documento</div>
+              <div style={{marginTop:8,fontSize:13.5,color:T.textDim,lineHeight:1.5,maxWidth:280}}>Salva qui link di prenotazione, biglietti PDF o conferme da rileggere prima del viaggio.</div>
+              <button onClick={()=>setDocModal(true)} style={{marginTop:24,background:T.surfaceDark,color:T.goldBright,border:'none',borderRadius:12,padding:'13px 24px',fontFamily:T.fontBody,fontSize:14,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}><Plus size={16}/>Aggiungi documento</button>
             </div>
           ) : (
-            <div style={{padding:'10px 0 80px'}}>
+            <div style={{padding:'14px 20px 100px',display:'flex',flexDirection:'column',gap:18}}>
               {(()=>{
                 const grouped: Record<string, Documento[]> = {}
                 ;(data.documenti||[]).forEach(d=>{ if(!grouped[d.cat]) grouped[d.cat]=[]; grouped[d.cat].push(d) })
                 return Object.entries(grouped).map(([cat, docs])=>(
                   <div key={cat}>
-                    <div style={{padding:'12px 16px 5px',fontSize:'.67rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',display:'flex',alignItems:'center',gap:5}}>
-                      <CatIcon cat={cat}/> {cat}
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,paddingLeft:2}}>
+                      <div style={{width:24,height:24,borderRadius:7,background:T.surfaceAlt,color:T.terra,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                        <CatIcon cat={cat} size={12}/>
+                      </div>
+                      <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim}}>{cat}</div>
+                      <div style={{fontSize:11,color:T.textFaint}}>{docs.length}</div>
                     </div>
-                    {docs.map(doc=>(
-                      <div key={doc.id} style={S.card}>
-                        <div style={{display:'flex',alignItems:'center',gap:10,padding:'12px 12px'}}>
-                          <div style={{width:36,height:36,borderRadius:10,background:doc.type==='link'?'#DBEAFE':'#EDE9FE',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-                            {doc.type==='link'
-                              ? <Link2 size={16} color="#1E40AF"/>
-                              : <File  size={16} color="#5B21B6"/>
-                            }
+                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,overflow:'hidden'}}>
+                      {docs.map((doc,idx)=>(
+                        <div key={doc.id} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:idx<docs.length-1?`1px solid ${T.borderSoft}`:'none'}}>
+                          <div style={{width:38,height:38,borderRadius:10,background:doc.type==='link'?T.infoSoft:'#F3E8FF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                            {doc.type==='link'?<Link2 size={16} color={T.info}/>:<File size={16} color="#7E22CE"/>}
                           </div>
                           <div style={{flex:1,minWidth:0}}>
-                            <div style={{fontSize:'.88rem',fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{doc.name}</div>
-                            <div style={{fontSize:'.72rem',color:'#7A6845',marginTop:2,display:'flex',alignItems:'center',gap:5}}>
-                              <CatBadge cat={doc.cat}/>
-                              {doc.type==='link'&&<span style={{color:'#aaa',overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap',maxWidth:120}}>{doc.url.replace(/^https?:\/\//,'')}</span>}
-                              {doc.type==='file'&&doc.mime&&<span style={{color:'#aaa',textTransform:'uppercase',fontSize:'.65rem'}}>{doc.mime.split('/')[1]||'file'}</span>}
+                            <div style={{fontSize:14,fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text,letterSpacing:'-0.005em'}}>{doc.name}</div>
+                            <div style={{fontSize:11.5,color:T.textDim,marginTop:3,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>
+                              {doc.type==='link'?doc.url.replace(/^https?:\/\//,''):(doc.mime||'file')}
+                              {doc.dayId&&(()=>{ const d=data.itinerary.find(x=>x.id===doc.dayId); return d?<span> · G{d.day} {d.title}</span>:null })()}
                             </div>
-                            {doc.note&&<div style={{fontSize:'.73rem',color:'#7A6845',fontStyle:'italic',marginTop:3}}>{doc.note}</div>}
+                            {doc.note&&<div style={{fontSize:11.5,color:T.textDim,fontStyle:'italic',marginTop:2}}>{doc.note}</div>}
                           </div>
-                          <div style={{display:'flex',gap:4,flexShrink:0}}>
-                            <button onClick={()=>openDoc(doc)} style={{...S.iBtn,width:36,height:36,background:doc.type==='link'?'#DBEAFE':'#EDE9FE'}}>
-                              {doc.type==='link'?<ExternalLink size={14} color="#1E40AF"/>:<Download size={14} color="#5B21B6"/>}
+                          <div style={{display:'flex',gap:2,flexShrink:0}}>
+                            <button onClick={()=>openDoc(doc)} style={{border:'none',background:doc.type==='link'?T.infoSoft:'#F3E8FF',borderRadius:9,cursor:'pointer',width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                              {doc.type==='link'?<ExternalLink size={14} color={T.info}/>:<Download size={14} color="#7E22CE"/>}
                             </button>
-                            <button onClick={()=>deleteDoc(doc.id)} style={{...S.iBtn,width:36,height:36}}><Trash2 size={14} color="#ccc"/></button>
+                            <button onClick={()=>deleteDoc(doc.id)} style={{border:'none',background:'transparent',borderRadius:9,cursor:'pointer',width:34,height:34,display:'flex',alignItems:'center',justifyContent:'center'}}><Trash2 size={13} color={T.textFaint}/></button>
                           </div>
                         </div>
-                      </div>
-                    ))}
+                      ))}
+                    </div>
                   </div>
                 ))
               })()}
@@ -935,127 +1109,129 @@ export default function App() {
           NOTE
       ══════════════════════════════ */}
       {page==='note'&&(
-        <div style={S.page}>
-          <div style={S.hdr}>
-            <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
-              <div style={S.hdrT}>Note</div>
-              {searchBtn}
-            </div>
-          </div>
-          <div style={{padding:'10px 16px 16px',display:'flex',flexDirection:'column',gap:10}}>
+        <div style={PAGE_STYLE}>
+          <PageHeader
+            title="Note"
+            subtitle={`${data.notes.length} appunti rapidi`}
+            action={<SearchBtn/>}
+          />
+          <div style={{padding:'14px 20px 16px',display:'flex',flexDirection:'column',gap:12}}>
             {data.notes.map(n=>(
-              <div key={n.id} style={{background:'#fff',borderRadius:14,border:'1px solid #D4C4A0',overflow:'hidden'}}>
-                <div style={{display:'flex',alignItems:'center',padding:'11px 14px 9px',gap:10}}>
-                  <div style={{width:10,height:10,borderRadius:'50%',background:n.color,flexShrink:0}}/>
-                  <input defaultValue={n.title} onBlur={e=>saveNote(n.id,'title',e.target.value)} style={{flex:1,border:'none',fontFamily:"'DM Sans',sans-serif",fontSize:'.9rem',fontWeight:700,color:'#2C2012',background:'transparent'}}/>
-                  <button onClick={()=>deleteNote(n.id)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center'}}><Trash2 size={14} color="#ccc"/></button>
+              <div key={n.id} style={{background:T.surface,borderRadius:16,border:`1px solid ${T.border}`,overflow:'hidden',position:'relative'}}>
+                <div style={{position:'absolute',left:0,top:0,bottom:0,width:4,background:n.color}}/>
+                <div style={{display:'flex',alignItems:'center',padding:'12px 14px 8px 18px',gap:10}}>
+                  <input defaultValue={n.title} onBlur={e=>saveNote(n.id,'title',e.target.value)} style={{flex:1,border:'none',fontFamily:T.fontDisplay,fontSize:16,fontWeight:700,color:T.text,background:'transparent',outline:'none',letterSpacing:'-0.01em'}}/>
+                  <button onClick={()=>deleteNote(n.id)} style={{background:'none',border:'none',cursor:'pointer',padding:4,display:'flex',alignItems:'center'}}><Trash2 size={14} color={T.textFaint}/></button>
                 </div>
-                <textarea defaultValue={n.text} onBlur={e=>saveNote(n.id,'text',e.target.value)} style={{width:'100%',border:'none',borderTop:'1px solid #F0E8D0',fontFamily:"'DM Sans',sans-serif",fontSize:'.84rem',color:'#2C2012',padding:'10px 14px',background:'#FAF6EE',resize:'none',minHeight:88,lineHeight:1.5,boxSizing:'border-box'}}/>
+                <textarea defaultValue={n.text} onBlur={e=>saveNote(n.id,'text',e.target.value)} style={{width:'100%',border:'none',borderTop:`1px solid ${T.borderSoft}`,fontFamily:T.fontBody,fontSize:13.5,color:T.text,padding:'12px 18px',background:T.bg,resize:'none',minHeight:88,lineHeight:1.55,boxSizing:'border-box',outline:'none'}}/>
               </div>
             ))}
           </div>
           <div style={{height:100}}/>
-          <button onClick={addNote} style={{position:'fixed',bottom:'calc(70px + env(safe-area-inset-bottom,0px) + 14px)',right:16,width:50,height:50,background:'#1A1208',color:'#E8B84B',border:'none',borderRadius:'50%',cursor:'pointer',boxShadow:'0 4px 18px rgba(0,0,0,.25)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:150}}><Plus size={22}/></button>
+          <button onClick={addNote} style={{position:'fixed',bottom:'calc(76px + env(safe-area-inset-bottom,0px) + 14px)',right:'max(20px, calc(50vw - 280px))',width:54,height:54,background:T.surfaceDark,color:T.goldBright,border:'none',borderRadius:'50%',cursor:'pointer',boxShadow:'0 8px 24px rgba(20,16,12,.3)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:150}}><Plus size={22}/></button>
         </div>
       )}
 
       {/* ══ BOTTOM NAV ══ */}
-      <nav style={{position:'fixed',bottom:0,left:0,right:0,background:'#1A1208',display:'flex',zIndex:200,paddingBottom:'env(safe-area-inset-bottom,0px)',boxShadow:'0 -2px 20px rgba(0,0,0,.3)',maxWidth:600,margin:'0 auto',overflowX:'auto',scrollbarWidth:'none'}}>
-        {navItems.map(({id,icon,lbl})=>(
-          <button key={id} onClick={()=>setPage(id)} style={{flex:'1 0 auto',minWidth:44,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'9px 2px 7px',border:'none',background:'none',color:page===id?'#E8B84B':'#555',fontFamily:"'DM Sans',sans-serif",fontSize:'.56rem',fontWeight:600,letterSpacing:'.04em',textTransform:'uppercase',cursor:'pointer',gap:3}}>
-            {icon}{lbl}
-            <div style={{width:4,height:4,borderRadius:'50%',background:'#E8B84B',visibility:page===id?'visible':'hidden'}}/>
-          </button>
-        ))}
+      <nav style={{position:'fixed',bottom:0,left:0,right:0,background:T.surfaceDark,display:'flex',zIndex:200,paddingBottom:'env(safe-area-inset-bottom,0px)',maxWidth:600,margin:'0 auto',borderTop:`1px solid ${T.surfaceDarkSoft}`}}>
+        {navItems.map(({id,icon,lbl})=>{
+          const active = page===id
+          return (
+            <button key={id} onClick={()=>setPage(id)} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 2px 9px',border:'none',background:'none',color:active?T.goldBright:'#7C7058',fontFamily:T.fontBody,fontSize:9.5,fontWeight:600,letterSpacing:'.04em',textTransform:'uppercase',cursor:'pointer',gap:4,position:'relative',transition:'color .15s'}}>
+              {active && <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:24,height:2,background:T.goldBright,borderRadius:'0 0 2px 2px'}}/>}
+              {icon}
+              {lbl}
+            </button>
+          )
+        })}
       </nav>
 
       {/* ══ SEARCH OVERLAY ══ */}
       {searchOpen&&(
-        <div style={{position:'fixed',inset:0,background:'#FAF6EE',zIndex:600,display:'flex',flexDirection:'column',maxWidth:600,margin:'0 auto'}}>
-          <div style={{padding:'12px 16px',borderBottom:'1px solid #D4C4A0',display:'flex',gap:10,alignItems:'center',background:'#1A1208'}}>
-            <Search size={16} color="#E8B84B"/>
-            <input
-              autoFocus
-              value={searchQ}
-              onChange={e=>setSearchQ(e.target.value)}
-              placeholder="Cerca in tutto il viaggio…"
-              style={{flex:1,border:'none',background:'transparent',color:'#fff',fontFamily:"'DM Sans',sans-serif",fontSize:'1rem',outline:'none'}}
-            />
-            <button onClick={()=>{setSearchOpen(false);setSearchQ('')}} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',padding:4}}><X size={22} color="#E8B84B"/></button>
+        <div style={{position:'fixed',inset:0,background:T.bg,zIndex:600,display:'flex',flexDirection:'column',maxWidth:600,margin:'0 auto',animation:'fadeIn .15s ease-out'}}>
+          <div style={{padding:'14px 16px',display:'flex',gap:10,alignItems:'center',background:T.surface,borderBottom:`1px solid ${T.border}`}}>
+            <Search size={18} color={T.textDim}/>
+            <input autoFocus value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Cerca voci, attività, note…" style={{flex:1,border:'none',background:'transparent',color:T.text,fontFamily:T.fontBody,fontSize:15,outline:'none'}}/>
+            <button onClick={()=>{setSearchOpen(false);setSearchQ('')}} style={{background:T.surfaceAlt,border:'none',cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0,borderRadius:10,width:34,height:34}}><X size={16} color={T.text}/></button>
           </div>
           <div style={{flex:1,overflowY:'auto'}}>
             {!searchQ.trim() ? (
-              <div style={{padding:'48px 24px',textAlign:'center',color:'#7A6845',display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
-                <Search size={36} color="#D4C4A0"/>
-                <div style={{fontSize:'.9rem'}}>Cerca voci, attività, note, documenti…</div>
+              <div style={{padding:'60px 24px',textAlign:'center',color:T.textDim,display:'flex',flexDirection:'column',alignItems:'center',gap:14}}>
+                <div style={{width:64,height:64,borderRadius:20,background:T.surfaceAlt,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                  <Search size={28} color={T.borderStrong} strokeWidth={1.5}/>
+                </div>
+                <div style={{fontSize:14,maxWidth:240,lineHeight:1.5}}>Cerca tra checklist, itinerario, note e documenti</div>
               </div>
             ) : searchResults && (
-              <>
-                {/* items */}
+              <div style={{padding:'8px 20px 80px'}}>
                 {searchResults.items.length>0&&(
-                  <div>
-                    <div style={{padding:'10px 16px 4px',fontSize:'.64rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',borderBottom:'1px solid #F0E8D0',display:'flex',alignItems:'center',gap:5}}><CheckSquare size={11}/>Checklist</div>
-                    {searchResults.items.map(item=>(
-                      <button key={item.id} onClick={()=>{setPage('checklist');setFilter('Tutto');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:'1px solid #F0E8D0',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left'}}>
-                        <CatBadge cat={item.cat}/>
-                        <div style={{flex:1,fontSize:'.86rem',fontWeight:500,minWidth:0,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{item.voce}</div>
-                        {item.costo>0&&<span style={{fontSize:'.78rem',fontWeight:700,color:'#3D5A2E',flexShrink:0}}>{fmtEur(item.costo)}</span>}
-                        <ChevronRight size={13} color="#ccc"/>
-                      </button>
-                    ))}
+                  <div style={{marginBottom:16}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><CheckSquare size={12}/>Checklist · {searchResults.items.length}</div>
+                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                      {searchResults.items.map((item,idx)=>(
+                        <button key={item.id} onClick={()=>{setPage('checklist');setFilter('Tutto');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.items.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
+                          <CatBadge cat={item.cat} size="sm"/>
+                          <div style={{flex:1,fontSize:13.5,fontWeight:500,minWidth:0,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>{item.voce}</div>
+                          {item.costo>0&&<span style={{fontSize:12,fontWeight:600,color:T.success,fontVariantNumeric:'tabular-nums'}}>{fmtEur(item.costo)}</span>}
+                          <ChevronRight size={14} color={T.textFaint}/>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {/* days */}
                 {searchResults.days.length>0&&(
-                  <div>
-                    <div style={{padding:'10px 16px 4px',fontSize:'.64rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',borderBottom:'1px solid #F0E8D0',display:'flex',alignItems:'center',gap:5}}><Calendar size={11}/>Itinerario</div>
-                    {searchResults.days.map(day=>(
-                      <button key={day.id} onClick={()=>{setPage('itinerario');setOpenDays(new Set([day.id]));setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:'1px solid #F0E8D0',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left'}}>
-                        <div style={{background:'#1A1208',color:'#E8B84B',borderRadius:6,padding:'2px 7px',fontFamily:"'Playfair Display',serif",fontSize:'.8rem',fontWeight:700,flexShrink:0}}>G{day.day}</div>
-                        <div style={{flex:1,minWidth:0}}>
-                          <div style={{fontSize:'.86rem',fontWeight:600,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{day.title}</div>
-                          <div style={{fontSize:'.72rem',color:'#7A6845',display:'flex',alignItems:'center',gap:3,marginTop:1}}><MapPin size={9}/>{day.place}</div>
-                        </div>
-                        <ChevronRight size={13} color="#ccc"/>
-                      </button>
-                    ))}
+                  <div style={{marginBottom:16}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><Calendar size={12}/>Itinerario · {searchResults.days.length}</div>
+                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                      {searchResults.days.map((day,idx)=>(
+                        <button key={day.id} onClick={()=>{setPage('itinerario');setOpenDays(new Set([day.id]));setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.days.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
+                          <div style={{background:T.surfaceDark,color:T.goldBright,borderRadius:8,padding:'3px 8px',fontFamily:T.fontDisplay,fontSize:12.5,fontWeight:700,flexShrink:0}}>G{day.day}</div>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:13.5,fontWeight:600,color:T.text,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{day.title}</div>
+                            <div style={{fontSize:11.5,color:T.textDim,display:'flex',alignItems:'center',gap:3,marginTop:2}}><MapPin size={9}/>{day.place}</div>
+                          </div>
+                          <ChevronRight size={14} color={T.textFaint}/>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {/* notes */}
                 {searchResults.notes.length>0&&(
-                  <div>
-                    <div style={{padding:'10px 16px 4px',fontSize:'.64rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',borderBottom:'1px solid #F0E8D0',display:'flex',alignItems:'center',gap:5}}><StickyNote size={11}/>Note</div>
-                    {searchResults.notes.map(note=>(
-                      <button key={note.id} onClick={()=>{setPage('note');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:'1px solid #F0E8D0',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left'}}>
-                        <div style={{width:10,height:10,borderRadius:'50%',background:note.color,flexShrink:0}}/>
-                        <div style={{flex:1,fontSize:'.86rem',fontWeight:500}}>{note.title}</div>
-                        <ChevronRight size={13} color="#ccc"/>
-                      </button>
-                    ))}
+                  <div style={{marginBottom:16}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><StickyNote size={12}/>Note · {searchResults.notes.length}</div>
+                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                      {searchResults.notes.map((note,idx)=>(
+                        <button key={note.id} onClick={()=>{setPage('note');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.notes.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
+                          <div style={{width:10,height:10,borderRadius:99,background:note.color,flexShrink:0}}/>
+                          <div style={{flex:1,fontSize:13.5,fontWeight:600,color:T.text}}>{note.title}</div>
+                          <ChevronRight size={14} color={T.textFaint}/>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {/* docs */}
                 {searchResults.docs.length>0&&(
-                  <div>
-                    <div style={{padding:'10px 16px 4px',fontSize:'.64rem',fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:'#7A6845',borderBottom:'1px solid #F0E8D0',display:'flex',alignItems:'center',gap:5}}><FolderOpen size={11}/>Documenti</div>
-                    {searchResults.docs.map(doc=>(
-                      <button key={doc.id} onClick={()=>{setPage('documenti');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:'1px solid #F0E8D0',padding:'10px 16px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left'}}>
-                        {doc.type==='link'?<Link2 size={14} color="#7A6845"/>:<File size={14} color="#7A6845"/>}
-                        <div style={{flex:1,fontSize:'.86rem',fontWeight:500,minWidth:0,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{doc.name}</div>
-                        <CatBadge cat={doc.cat}/>
-                        <ChevronRight size={13} color="#ccc"/>
-                      </button>
-                    ))}
+                  <div style={{marginBottom:16}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><FolderOpen size={12}/>Documenti · {searchResults.docs.length}</div>
+                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                      {searchResults.docs.map((doc,idx)=>(
+                        <button key={doc.id} onClick={()=>{setPage('documenti');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.docs.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
+                          {doc.type==='link'?<Link2 size={14} color={T.info}/>:<File size={14} color="#7E22CE"/>}
+                          <div style={{flex:1,fontSize:13.5,fontWeight:500,minWidth:0,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis',color:T.text}}>{doc.name}</div>
+                          <CatBadge cat={doc.cat} size="sm"/>
+                          <ChevronRight size={14} color={T.textFaint}/>
+                        </button>
+                      ))}
+                    </div>
                   </div>
                 )}
-                {/* empty */}
                 {searchResults.items.length===0&&searchResults.days.length===0&&searchResults.notes.length===0&&searchResults.docs.length===0&&(
-                  <div style={{padding:'48px 24px',textAlign:'center',color:'#7A6845',display:'flex',flexDirection:'column',alignItems:'center',gap:8}}>
-                    <div style={{fontSize:'1.5rem'}}>🔍</div>
-                    <div style={{fontSize:'.9rem'}}>Nessun risultato per <strong>"{searchQ}"</strong></div>
+                  <div style={{padding:'48px 24px',textAlign:'center',color:T.textDim,display:'flex',flexDirection:'column',alignItems:'center',gap:10}}>
+                    <div style={{fontSize:32}}>🔍</div>
+                    <div style={{fontSize:14}}>Nessun risultato per <strong style={{color:T.text}}>"{searchQ}"</strong></div>
                   </div>
                 )}
-              </>
+              </div>
             )}
           </div>
         </div>
@@ -1063,71 +1239,61 @@ export default function App() {
 
       {/* ══ MODALS ══ */}
       {addModal&&(
-        <Modal title="Aggiungi Voce" onClose={()=>setAddModal(false)}>
+        <Modal title="Aggiungi voce" onClose={()=>setAddModal(false)}>
           <FG label="Voce / Attività"><input style={inputStyle} value={fVoce} onChange={e=>setFVoce(e.target.value)} placeholder="es. Volo Lima – Cusco"/></FG>
           <FRow><FRowItem label="Sezione"><select style={inputStyle} value={fSec} onChange={e=>setFSec(e.target.value)}>{SECTIONS.map(s=><option key={s}>{s}</option>)}</select></FRowItem><FRowItem label="Categoria"><select style={inputStyle} value={fCat} onChange={e=>setFCat(e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select></FRowItem></FRow>
           <FRow><FRowItem label="Data"><input style={inputStyle} type="date" value={fGiorno} onChange={e=>setFGiorno(e.target.value)}/></FRowItem><FRowItem label="Costo €/pers."><input style={inputStyle} type="number" value={fCosto} onChange={e=>setFCosto(e.target.value)} placeholder="0"/></FRowItem></FRow>
           <FG label="Quando prenotare"><select style={inputStyle} value={fQuando} onChange={e=>setFQuando(e.target.value)}>{QUANDO_OPTS.map(o=><option key={o}>{o}</option>)}</select></FG>
-          <FG label="Note"><textarea style={{...inputStyle,minHeight:70,resize:'none'}} value={fNote} onChange={e=>setFNote(e.target.value)}/></FG>
-          <div style={{margin:'10px 20px 0',background:'#ECFDF5',border:'1.5px solid #6EE7B7',borderRadius:10,padding:'12px 14px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:10}}><input type="checkbox" id="fcanc" checked={fCanc} onChange={e=>setFCanc(e.target.checked)} style={{width:20,height:20,accentColor:'#3D5A2E',cursor:'pointer'}}/><label htmlFor="fcanc" style={{fontSize:'.88rem',fontWeight:600,color:'#065F46',cursor:'pointer'}}>Cancellazione gratuita</label></div>
-            {fCanc&&<input style={{...inputStyle,marginTop:9,border:'1.5px solid #6EE7B7'}} type="date" value={fCancDate} onChange={e=>setFCancDate(e.target.value)}/>}
+          <FG label="Note"><textarea style={{...inputStyle,minHeight:72,resize:'none'}} value={fNote} onChange={e=>setFNote(e.target.value)}/></FG>
+          <div style={{margin:'12px 24px 0',background:T.successSoft,border:`1px solid #BBF7D0`,borderRadius:12,padding:'13px 14px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}><input type="checkbox" id="fcanc" checked={fCanc} onChange={e=>setFCanc(e.target.checked)} style={{width:18,height:18,accentColor:T.success,cursor:'pointer'}}/><label htmlFor="fcanc" style={{fontSize:13.5,fontWeight:600,color:T.success,cursor:'pointer'}}>Cancellazione gratuita</label></div>
+            {fCanc&&<input style={{...inputStyle,marginTop:10,border:`1px solid #6EE7B7`}} type="date" value={fCancDate} onChange={e=>setFCancDate(e.target.value)}/>}
           </div>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setAddModal(false)}>Annulla</button><button style={S.btn} onClick={saveNewItem}>Aggiungi</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setAddModal(false)}>Annulla</button><button style={btnPrimary} onClick={saveNewItem}>Aggiungi</button></div>
         </Modal>
       )}
       {editModal&&(
-        <Modal title="Modifica Voce" onClose={()=>setEditModal(null)}>
+        <Modal title="Modifica voce" onClose={()=>setEditModal(null)}>
           <FG label="Voce / Attività"><input style={inputStyle} value={eVoce} onChange={e=>setEVoce(e.target.value)}/></FG>
           <FRow><FRowItem label="Sezione"><select style={inputStyle} value={eSec} onChange={e=>setESec(e.target.value)}>{SECTIONS.map(s=><option key={s}>{s}</option>)}</select></FRowItem><FRowItem label="Categoria"><select style={inputStyle} value={eCat} onChange={e=>setECat(e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select></FRowItem></FRow>
           <FRow><FRowItem label="Data"><input style={inputStyle} type="date" value={eGiorno} onChange={e=>setEGiorno(e.target.value)}/></FRowItem><FRowItem label="Costo €/pers."><input style={inputStyle} type="number" value={eCosto} onChange={e=>setECosto(e.target.value)}/></FRowItem></FRow>
           <FG label="Quando prenotare"><select style={inputStyle} value={eQuando} onChange={e=>setEQuando(e.target.value)}>{QUANDO_OPTS.map(o=><option key={o}>{o}</option>)}</select></FG>
-          <FG label="Note"><textarea style={{...inputStyle,minHeight:70,resize:'none'}} value={eNote} onChange={e=>setENote(e.target.value)}/></FG>
-          <div style={{margin:'10px 20px 0',background:'#ECFDF5',border:'1.5px solid #6EE7B7',borderRadius:10,padding:'12px 14px'}}>
-            <div style={{display:'flex',alignItems:'center',gap:10}}><input type="checkbox" id="ecanc" checked={eCanc} onChange={e=>setECanc(e.target.checked)} style={{width:20,height:20,accentColor:'#3D5A2E',cursor:'pointer'}}/><label htmlFor="ecanc" style={{fontSize:'.88rem',fontWeight:600,color:'#065F46',cursor:'pointer'}}>Cancellazione gratuita</label></div>
-            {eCanc&&<input style={{...inputStyle,marginTop:9,border:'1.5px solid #6EE7B7'}} type="date" value={eCancDate} onChange={e=>setECancDate(e.target.value)}/>}
+          <FG label="Note"><textarea style={{...inputStyle,minHeight:72,resize:'none'}} value={eNote} onChange={e=>setENote(e.target.value)}/></FG>
+          <div style={{margin:'12px 24px 0',background:T.successSoft,border:`1px solid #BBF7D0`,borderRadius:12,padding:'13px 14px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10}}><input type="checkbox" id="ecanc" checked={eCanc} onChange={e=>setECanc(e.target.checked)} style={{width:18,height:18,accentColor:T.success,cursor:'pointer'}}/><label htmlFor="ecanc" style={{fontSize:13.5,fontWeight:600,color:T.success,cursor:'pointer'}}>Cancellazione gratuita</label></div>
+            {eCanc&&<input style={{...inputStyle,marginTop:10,border:`1px solid #6EE7B7`}} type="date" value={eCancDate} onChange={e=>setECancDate(e.target.value)}/>}
           </div>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setEditModal(null)}>Annulla</button><button style={S.btn} onClick={saveEdit}>Salva</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setEditModal(null)}>Annulla</button><button style={btnPrimary} onClick={saveEdit}>Salva</button></div>
         </Modal>
       )}
       {actModal!==null&&(
-        <Modal title={`Aggiungi attività – G${data.itinerary.find(d=>d.id===actModal)?.day}`} onClose={()=>setActModal(null)}>
+        <Modal title={`Nuova attività · G${data.itinerary.find(d=>d.id===actModal)?.day}`} onClose={()=>setActModal(null)}>
           <FG label="Titolo"><input style={inputStyle} value={aTitle} onChange={e=>setATitle(e.target.value)} placeholder="es. Visita Machu Picchu"/></FG>
           <FRow><FRowItem label="Ora"><input style={inputStyle} type="time" value={aTime} onChange={e=>setATime(e.target.value)}/></FRowItem><FRowItem label="Tipo"><select style={inputStyle} value={aType} onChange={e=>setAType(e.target.value)}>{ACT_TYPES.map(t=><option key={t}>{t}</option>)}</select></FRowItem></FRow>
           <FG label="Note"><input style={inputStyle} value={aNote} onChange={e=>setANote(e.target.value)} placeholder="es. Portare acqua"/></FG>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setActModal(null)}>Annulla</button><button style={S.btn} onClick={saveActivity}>Aggiungi</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setActModal(null)}>Annulla</button><button style={btnPrimary} onClick={saveActivity}>Aggiungi</button></div>
         </Modal>
       )}
       {dayModal&&(
-        <Modal title="Aggiungi Giorno" onClose={()=>setDayModal(false)}>
+        <Modal title="Nuovo giorno" onClose={()=>setDayModal(false)}>
           <FG label="Titolo"><input style={inputStyle} value={dTitle} onChange={e=>setDTitle(e.target.value)} placeholder="es. Arequipa – Città Bianca"/></FG>
           <FRow><FRowItem label="Data"><input style={inputStyle} type="date" value={dDate} onChange={e=>setDDate(e.target.value)}/></FRowItem><FRowItem label="N° Giorno"><input style={inputStyle} type="number" value={dNum} onChange={e=>setDNum(e.target.value)}/></FRowItem></FRow>
           <FRow>
-            <FRowItem label="Luogo (pin mappa)">
-              <select style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)}>
-                <option value="">— Seleziona —</option>
-                {Object.keys(PLACE_COORDS).sort().map(p=><option key={p} value={p}>{p}</option>)}
-              </select>
-            </FRowItem>
+            <FRowItem label="Luogo (pin mappa)"><select style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)}><option value="">— Seleziona —</option>{Object.keys(PLACE_COORDS).sort().map(p=><option key={p} value={p}>{p}</option>)}</select></FRowItem>
             <FRowItem label="Alloggio"><input style={inputStyle} value={dHotel} onChange={e=>setDHotel(e.target.value)} placeholder="es. Hostal"/></FRowItem>
           </FRow>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setDayModal(false)}>Annulla</button><button style={S.btn} onClick={saveDay}>Aggiungi</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setDayModal(false)}>Annulla</button><button style={btnPrimary} onClick={saveDay}>Aggiungi</button></div>
         </Modal>
       )}
       {editDayModal&&(
-        <Modal title={`Modifica G${editDayModal.day} · ${editDayModal.title}`} onClose={()=>setEditDayModal(null)}>
+        <Modal title={`Modifica G${editDayModal.day}`} onClose={()=>setEditDayModal(null)}>
           <FG label="Titolo"><input style={inputStyle} value={dTitle} onChange={e=>setDTitle(e.target.value)}/></FG>
           <FRow><FRowItem label="Data"><input style={inputStyle} type="date" value={dDate} onChange={e=>setDDate(e.target.value)}/></FRowItem><FRowItem label="N° Giorno"><input style={inputStyle} type="number" value={dNum} onChange={e=>setDNum(e.target.value)}/></FRowItem></FRow>
           <FRow>
-            <FRowItem label="Luogo (pin mappa)">
-              <select style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)}>
-                <option value="">— Seleziona —</option>
-                {Object.keys(PLACE_COORDS).sort().map(p=><option key={p} value={p}>{p}</option>)}
-              </select>
-            </FRowItem>
+            <FRowItem label="Luogo (pin mappa)"><select style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)}><option value="">— Seleziona —</option>{Object.keys(PLACE_COORDS).sort().map(p=><option key={p} value={p}>{p}</option>)}</select></FRowItem>
             <FRowItem label="Alloggio"><input style={inputStyle} value={dHotel} onChange={e=>setDHotel(e.target.value)}/></FRowItem>
           </FRow>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setEditDayModal(null)}>Annulla</button><button style={S.btn} onClick={saveEditDay}>Salva</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setEditDayModal(null)}>Annulla</button><button style={btnPrimary} onClick={saveEditDay}>Salva</button></div>
         </Modal>
       )}
       {editActModal!==null&&(
@@ -1135,40 +1301,27 @@ export default function App() {
           <FG label="Titolo"><input style={inputStyle} value={aTitle} onChange={e=>setATitle(e.target.value)}/></FG>
           <FRow><FRowItem label="Ora"><input style={inputStyle} type="time" value={aTime} onChange={e=>setATime(e.target.value)}/></FRowItem><FRowItem label="Tipo"><select style={inputStyle} value={aType} onChange={e=>setAType(e.target.value)}>{ACT_TYPES.map(t=><option key={t}>{t}</option>)}</select></FRowItem></FRow>
           <FG label="Note"><input style={inputStyle} value={aNote} onChange={e=>setANote(e.target.value)}/></FG>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setEditActModal(null)}>Annulla</button><button style={S.btn} onClick={saveEditActivity}>Salva</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setEditActModal(null)}>Annulla</button><button style={btnPrimary} onClick={saveEditActivity}>Salva</button></div>
         </Modal>
       )}
-
-      {/* ── DOCUMENTO MODAL ── */}
       {docModal&&(
-        <Modal title="Aggiungi Documento" onClose={()=>setDocModal(false)}>
-          {/* type toggle */}
-          <div style={{display:'flex',margin:'12px 20px 0',background:'#F0E8D0',borderRadius:12,padding:3,gap:3}}>
+        <Modal title="Nuovo documento" onClose={()=>setDocModal(false)}>
+          <div style={{display:'flex',margin:'12px 24px 0',background:T.surfaceAlt,borderRadius:12,padding:3,gap:3}}>
             {(['link','file'] as const).map(t=>(
-              <button key={t} onClick={()=>setDDocType(t)} style={{flex:1,padding:'10px 0',border:'none',borderRadius:9,background:dDocType===t?'#1A1208':'transparent',color:dDocType===t?'#E8B84B':'#7A6845',fontFamily:"'DM Sans',sans-serif",fontSize:'.85rem',fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6}}>
-                {t==='link'?<><Link2 size={14}/>Link URL</>:<><File size={14}/>File (PDF/img)</>}
+              <button key={t} onClick={()=>setDDocType(t)} style={{flex:1,padding:'10px 0',border:'none',borderRadius:9,background:dDocType===t?T.surface:'transparent',color:dDocType===t?T.text:T.textDim,fontFamily:T.fontBody,fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,boxShadow:dDocType===t?'0 1px 3px rgba(0,0,0,.08)':'none',transition:'all .15s'}}>
+                {t==='link'?<><Link2 size={14}/>Link URL</>:<><File size={14}/>File caricato</>}
               </button>
             ))}
           </div>
           {dDocType==='link' ? (
             <FG label="URL Prenotazione / Conferma"><input style={inputStyle} type="url" value={dDocUrl} onChange={e=>setDDocUrl(e.target.value)} placeholder="https://booking.com/..."/></FG>
           ) : (
-            <FG label="Carica File (max 500KB – PDF, JPG, PNG)">
-              <input type="file" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" onChange={handleFileUpload} style={{...inputStyle,padding:'10px'}}/>
-            </FG>
+            <FG label="Carica file (max 500KB)"><input type="file" accept=".pdf,.jpg,.jpeg,.png,.gif,.webp" onChange={handleFileUpload} style={{...inputStyle,padding:'10px'}}/></FG>
           )}
           <FG label="Nome / Titolo"><input style={inputStyle} value={dDocName} onChange={e=>setDDocName(e.target.value)} placeholder="es. Conferma volo Roma–Lima"/></FG>
-          <FG label="Categoria"><select style={inputStyle} value={dDocCat} onChange={e=>setDDocCat(e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select></FG>
+          <FRow><FRowItem label="Categoria"><select style={inputStyle} value={dDocCat} onChange={e=>setDDocCat(e.target.value)}>{CATS.map(c=><option key={c}>{c}</option>)}</select></FRowItem><FRowItem label="Giorno itinerario"><select style={inputStyle} value={dDocDayId??''} onChange={e=>setDDocDayId(e.target.value?parseInt(e.target.value):undefined)}><option value="">— Nessuno —</option>{[...data.itinerary].sort((a,b)=>a.day-b.day).map(d=><option key={d.id} value={d.id}>G{d.day} · {d.title}</option>)}</select></FRowItem></FRow>
           <FG label="Note (opzionale)"><input style={inputStyle} value={dDocNote} onChange={e=>setDDocNote(e.target.value)} placeholder="es. Codice: ABC123"/></FG>
-          <FG label="Collega a giorno itinerario (opzionale)">
-            <select style={inputStyle} value={dDocDayId??''} onChange={e=>setDDocDayId(e.target.value?parseInt(e.target.value):undefined)}>
-              <option value="">— Nessuno —</option>
-              {[...data.itinerary].sort((a,b)=>a.day-b.day).map(d=>(
-                <option key={d.id} value={d.id}>G{d.day} · {d.title} ({fmtDate(d.date)})</option>
-              ))}
-            </select>
-          </FG>
-          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setDocModal(false)}>Annulla</button><button style={S.btn} onClick={saveDoc}>Salva</button></div>
+          <div style={{display:'flex',gap:10,padding:'16px 24px 0'}}><button style={btnSecondary} onClick={()=>setDocModal(false)}>Annulla</button><button style={btnPrimary} onClick={saveDoc}>Salva</button></div>
         </Modal>
       )}
     </div>

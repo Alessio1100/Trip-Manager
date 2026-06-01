@@ -79,18 +79,17 @@ export default function MapLeaflet({ itinerary, onLocationClick }: Props) {
 
       // Add one marker per coordinate group
       for (const { coords, days, places } of Object.values(byCoords)) {
-        const label    = days.map(d => `G${d.day}`).join('·')
-        const tooltip  = [...places].join(' / ')
-        // Scale marker width to fit longer labels
-        const w = Math.max(32, label.length * 7 + 16)
+        const label   = days.map(d => `G${d.day}`).join('·')
+        const tooltip = [...places].join(' / ')
+        const w = Math.max(34, label.length * 7.5 + 18)
         const icon = L.divIcon({
           className: '',
-          html: `<div style="background:#1A1208;color:#E8B84B;border:2.5px solid #E8B84B;border-radius:16px;min-width:${w}px;height:28px;display:flex;align-items:center;justify-content:center;padding:0 6px;font-size:9px;font-weight:700;font-family:sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap">${label}</div>`,
-          iconSize: [w, 28],
-          iconAnchor: [w / 2, 14],
+          html: `<div style="background:#171310;color:#E8B84B;border:2px solid #E8B84B;border-radius:18px;min-width:${w}px;height:30px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif;box-shadow:0 4px 14px rgba(23,19,16,.45);cursor:pointer;white-space:nowrap;letter-spacing:-0.01em">${label}</div>`,
+          iconSize: [w, 30],
+          iconAnchor: [w / 2, 15],
         })
         const marker = L.marker(coords, { icon }).addTo(map)
-        marker.bindTooltip(`<strong>${tooltip}</strong>`, { permanent: false, direction: 'top', offset: [0, -16] })
+        marker.bindTooltip(`<strong>${tooltip}</strong>`, { permanent: false, direction: 'top', offset: [0, -18] })
         marker.on('click', () => cbRef.current(days[0].place, days))
       }
 
