@@ -23,25 +23,27 @@ type PageId     = 'dashboard'|'checklist'|'itinerario'|'budget'|'note'|'mappa'|'
 /* ─── DESIGN TOKENS ─── */
 const T = {
   /* surface */
-  bg:           '#FAF8F2',
+  bg:           '#F6F3EC',     // warmer cream, deeper than before
   surface:      '#FFFFFF',
-  surfaceAlt:   '#F4F0E6',
-  surfaceDark:  '#171310',
-  surfaceDarkSoft: '#252019',
-  /* border */
-  border:       '#EBE3D0',
-  borderSoft:   '#F2EDDC',
-  borderStrong: '#D9CFB4',
+  surfaceAlt:   '#EFEAE0',
+  surfaceDark:  '#0C0907',     // near-black espresso, more dramatic
+  surfaceDarkSoft: '#1A1612',
+  /* border (very subtle, often replaced by shadow) */
+  border:       '#E5DFD0',
+  borderSoft:   '#EFEAE0',
+  borderStrong: '#D4CBB5',
   /* text */
-  text:         '#1B1612',
-  textDim:      '#6F6354',
-  textFaint:    '#9C9079',
-  /* brand */
+  text:         '#100C08',     // deeper black for contrast
+  textDim:      '#5A4F3F',
+  textFaint:    '#928A78',
+  /* brand — terracotta primary (replaces gold-first identity) */
+  primary:      '#B23A0F',     // deep andean terracotta
+  primaryBright:'#E2570C',
+  primarySoft:  '#FCEEE3',
+  /* gold — used sparingly for premium moments */
   gold:         '#B8862E',
-  goldBright:   '#E8B84B',
+  goldBright:   '#F0C654',
   goldSoft:     '#FAF1DD',
-  terra:        '#9A3412',
-  terraSoft:    '#FFF2EA',
   /* semantic */
   success:      '#15803D',
   successSoft:  '#DCFCE7',
@@ -51,6 +53,12 @@ const T = {
   dangerSoft:   '#FEE2E2',
   info:         '#1E40AF',
   infoSoft:     '#DBEAFE',
+  /* elevation */
+  shadowSm:     '0 1px 2px rgba(16,12,8,.04), 0 1px 3px rgba(16,12,8,.05)',
+  shadowMd:     '0 2px 4px rgba(16,12,8,.04), 0 8px 24px rgba(16,12,8,.06)',
+  shadowLg:     '0 4px 12px rgba(16,12,8,.08), 0 16px 48px rgba(16,12,8,.12)',
+  shadowHero:   '0 12px 40px rgba(178,58,15,.18), 0 4px 12px rgba(12,9,7,.18)',
+  shadowNav:    '0 -2px 8px rgba(16,12,8,.03), 0 -8px 32px rgba(16,12,8,.06)',
   /* fonts */
   fontDisplay:  "'Playfair Display', serif",
   fontBody:     "'DM Sans', sans-serif",
@@ -194,7 +202,7 @@ function CancBadge({item}:{item:Item}){
 function Modal({title,children,onClose}:{title:string,children:React.ReactNode,onClose:()=>void}){
   return (
     <div
-      style={{position:'fixed',inset:0,background:'rgba(20,16,12,.55)',zIndex:500,display:'flex',alignItems:'flex-end',backdropFilter:'blur(4px)',WebkitBackdropFilter:'blur(4px)'}}
+      style={{position:'fixed',inset:0,background:'rgba(20,16,12,.55)',zIndex:1300,display:'flex',alignItems:'flex-end',backdropFilter:'blur(4px)',WebkitBackdropFilter:'blur(4px)'}}
       onClick={e=>{if(e.target===e.currentTarget)onClose()}}
     >
       <div style={{background:T.bg,borderRadius:'24px 24px 0 0',width:'100%',maxWidth:600,margin:'0 auto',maxHeight:'92dvh',overflowY:'auto',paddingBottom:'calc(20px + env(safe-area-inset-bottom,0px))'}}>
@@ -233,7 +241,7 @@ const FRow = ({children}:{children:React.ReactNode}) => (
 const FRowItem = ({label,children}:{label:string,children:React.ReactNode}) => (
   <div><Label>{label}</Label>{children}</div>
 )
-const btnPrimary: React.CSSProperties   = {flex:1,background:T.surfaceDark,border:'none',borderRadius:12,padding:'14px 16px',fontFamily:T.fontBody,fontSize:14.5,fontWeight:700,color:T.goldBright,cursor:'pointer',letterSpacing:'-0.005em'}
+const btnPrimary: React.CSSProperties   = {flex:1,background:T.primary,border:'none',borderRadius:12,padding:'14px 16px',fontFamily:T.fontBody,fontSize:14.5,fontWeight:700,color:'#fff',cursor:'pointer',letterSpacing:'-0.005em',boxShadow:`0 4px 14px ${T.primary}40`}
 const btnSecondary: React.CSSProperties = {flex:1,background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'14px 16px',fontFamily:T.fontBody,fontSize:14.5,fontWeight:600,color:T.textDim,cursor:'pointer',letterSpacing:'-0.005em'}
 
 /* ─── DYNAMIC MAP ─── */
@@ -381,9 +389,11 @@ export default function App() {
 
   /* ── LOADING ── */
   if (!data) return (
-    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100dvh',flexDirection:'column',gap:14,background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontBody}}>
-      <div style={{fontSize:'2.4rem',animation:'pulse 2s ease-in-out infinite'}}>🦙</div>
-      <div style={{fontSize:13,color:'#9C8F73',letterSpacing:'0.04em',textTransform:'uppercase'}}>Caricamento Perù 2026</div>
+    <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100dvh',flexDirection:'column',gap:20,background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontBody,position:'relative',overflow:'hidden'}}>
+      <div style={{position:'absolute',top:'30%',left:'50%',transform:'translateX(-50%)',width:400,height:400,borderRadius:'50%',background:`radial-gradient(circle,${T.primaryBright}30,transparent 60%)`,filter:'blur(40px)',pointerEvents:'none'}}/>
+      <div style={{position:'relative',fontSize:48,animation:'pulse 2s ease-in-out infinite'}}>🦙</div>
+      <div style={{position:'relative',fontFamily:T.fontDisplay,fontSize:24,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em'}}>Perù 2026</div>
+      <div style={{position:'relative',fontSize:11,color:'#9C8F73',letterSpacing:'.18em',textTransform:'uppercase',fontWeight:600}}>Caricamento in corso</div>
     </div>
   )
 
@@ -430,6 +440,7 @@ export default function App() {
   const deleteActivity = (dayId:number, idx:number) => { if(!confirm('Eliminare?')) return; save({...data, itinerary: data.itinerary.map(d=>d.id===dayId?{...d,activities:d.activities.filter((_,i)=>i!==idx)}:d)}) }
 
   const openEditDay  = (day:Day) => { setDTitle(day.title); setDDate(day.date); setDNum(String(day.day)); setDPlace(day.place); setDHotel(day.hotel||''); setEditDayModal(day) }
+  const openAddTappa = (day:Day) => { setDTitle(''); setDDate(day.date); setDNum(String(day.day)); setDPlace(''); setDHotel(day.hotel||''); setDayModal(true) }
   const saveEditDay  = () => {
     if(!editDayModal||!dTitle.trim()) return
     save({...data, itinerary: data.itinerary.map(d=>d.id===editDayModal.id?{...d,title:dTitle.trim(),date:dDate,day:parseInt(dNum)||d.day,place:dPlace,hotel:dHotel}:d)})
@@ -495,22 +506,23 @@ export default function App() {
   const finito    = oggi>endDate
 
   const prossimoAlloggio = [...data.items].filter(i=>i.section==='ALLOGGI'&&!i.done&&i.giorno).sort((a,b)=>a.giorno.localeCompare(b.giorno))[0]
-  const prossimoGiorno   = [...data.itinerary].sort((a,b)=>a.day-b.day).find(d=>!d.date||new Date(d.date+'T00:00:00')>=oggi) || [...data.itinerary].sort((a,b)=>a.day-b.day)[0]
+  const prossimoGiorno   = [...data.itinerary].sort((a,b)=>a.day!==b.day?a.day-b.day:a.id-b.id).find(d=>!d.date||new Date(d.date+'T00:00:00')>=oggi) || [...data.itinerary].sort((a,b)=>a.day!==b.day?a.day-b.day:a.id-b.id)[0]
   const daFare           = SECTIONS.filter(s=>s!=='QUOTIDIANO').map(sec=>({sec,count:data.items.filter(i=>i.section===sec&&!i.done).length})).filter(x=>x.count>0)
 
   /* ── UI HELPERS ── */
   const PAGE_STYLE: React.CSSProperties = {
-    height:'calc(100dvh - 64px - env(safe-area-inset-bottom,0px))',
-    overflowY:'auto',
+    minHeight:'100dvh',
+    paddingBottom:'calc(96px + env(safe-area-inset-bottom,0px))',
     WebkitOverflowScrolling:'touch',
   }
 
-  const PageHeader = ({title, subtitle, action}:{title:string; subtitle?:string; action?:React.ReactNode}) => (
-    <header style={{position:'sticky',top:0,zIndex:50,background:T.bg,borderBottom:`1px solid ${T.borderSoft}`,padding:'18px 20px 14px'}}>
-      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',gap:12}}>
+  const PageHeader = ({title, subtitle, action, eyebrow}:{title:string; subtitle?:string; action?:React.ReactNode; eyebrow?:string}) => (
+    <header style={{position:'sticky',top:0,zIndex:50,background:`${T.bg}f5`,backdropFilter:'blur(12px) saturate(1.4)',WebkitBackdropFilter:'blur(12px) saturate(1.4)',borderBottom:`1px solid ${T.borderSoft}`,padding:'22px 22px 16px'}}>
+      <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-end',gap:12}}>
         <div style={{minWidth:0,flex:1}}>
-          <h1 style={{fontFamily:T.fontDisplay,fontSize:24,fontWeight:700,color:T.text,letterSpacing:'-0.015em',lineHeight:1.1,margin:0}}>{title}</h1>
-          {subtitle && <p style={{fontSize:13,color:T.textDim,marginTop:4,margin:'4px 0 0',letterSpacing:'-0.005em'}}>{subtitle}</p>}
+          {eyebrow && <div style={{fontSize:10,fontWeight:700,letterSpacing:'.18em',textTransform:'uppercase',color:T.primary,marginBottom:6}}>{eyebrow}</div>}
+          <h1 style={{fontFamily:T.fontDisplay,fontSize:30,fontWeight:700,color:T.text,letterSpacing:'-0.025em',lineHeight:1,margin:0}}>{title}</h1>
+          {subtitle && <p style={{fontSize:13,color:T.textDim,marginTop:5,margin:'5px 0 0',letterSpacing:'-0.005em'}}>{subtitle}</p>}
         </div>
         {action && <div style={{display:'flex',alignItems:'center',gap:8,flexShrink:0}}>{action}</div>}
       </div>
@@ -518,15 +530,20 @@ export default function App() {
   )
 
   const SearchBtn = () => (
-    <button onClick={()=>setSearchOpen(true)} style={{background:T.surface,border:`1px solid ${T.border}`,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0,borderRadius:10,width:38,height:38}} aria-label="Cerca">
-      <Search size={17} color={T.text} strokeWidth={2}/>
+    <button onClick={()=>setSearchOpen(true)} style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',padding:0,borderRadius:12,width:40,height:40}} aria-label="Cerca">
+      <Search size={17} color={T.text} strokeWidth={2.2}/>
     </button>
   )
   const SyncDot = () => (
-    <span style={{display:'inline-flex',alignItems:'center',gap:5,fontSize:11,color:syncing?T.gold:T.textFaint,padding:'7px 10px',background:T.surface,border:`1px solid ${T.border}`,borderRadius:10,height:38,boxSizing:'border-box',letterSpacing:'-0.005em'}}>
-      <span style={{width:6,height:6,borderRadius:99,background:syncing?T.gold:'#10B981',animation:syncing?'pulse 1.2s ease-in-out infinite':'none'}}/>
+    <span style={{display:'inline-flex',alignItems:'center',gap:6,fontSize:11,fontWeight:600,color:syncing?T.primary:T.textDim,padding:'8px 12px',background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:12,height:40,boxSizing:'border-box',letterSpacing:'-0.005em'}}>
+      <span style={{width:6,height:6,borderRadius:99,background:syncing?T.primary:'#10B981',animation:syncing?'pulse 1.2s ease-in-out infinite':'none'}}/>
       {syncing ? 'sync…' : lastSync}
     </span>
+  )
+  const PrimaryActionBtn = ({onClick,icon,label}:{onClick:()=>void; icon?:React.ReactNode; label?:string}) => (
+    <button onClick={onClick} style={{background:T.primary,border:'none',borderRadius:12,color:'#fff',padding:label?'0 14px':0,width:label?'auto':40,height:40,fontSize:13,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontFamily:T.fontBody,letterSpacing:'-0.005em',boxShadow:`0 4px 14px ${T.primary}40`}}>
+      {icon}{label}
+    </button>
   )
 
   const goToChecklist = (cat?:string) => { if(cat) setFilter(cat); setPage('checklist') }
@@ -569,33 +586,43 @@ export default function App() {
           <div style={{padding:'16px 20px 24px',display:'flex',flexDirection:'column',gap:14}}>
 
             {/* HERO COUNTDOWN */}
-            <div style={{background:T.surfaceDark,borderRadius:24,padding:'26px 24px',color:'#fff',position:'relative',overflow:'hidden'}}>
-              <div style={{position:'absolute',top:-50,right:-50,width:180,height:180,borderRadius:'50%',background:`radial-gradient(circle,${T.gold}40,transparent 70%)`}}/>
-              <div style={{position:'absolute',bottom:-30,left:-30,width:120,height:120,borderRadius:'50%',background:`radial-gradient(circle,${T.terra}25,transparent 70%)`}}/>
+            <div style={{background:T.surfaceDark,borderRadius:22,padding:'18px 20px 16px',color:'#fff',position:'relative',overflow:'hidden',boxShadow:T.shadowHero}}>
+              <div style={{position:'absolute',top:-60,right:-60,width:200,height:200,borderRadius:'50%',background:`radial-gradient(circle,${T.primaryBright}30,transparent 65%)`,filter:'blur(6px)'}}/>
 
               {finito ? (
                 <div style={{position:'relative'}}>
-                  <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:8,fontWeight:600}}>Viaggio terminato</div>
-                  <div style={{fontFamily:T.fontDisplay,fontSize:32,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1}}>Speriamo sia andato bene</div>
-                  <div style={{fontSize:13,color:'#A89B7E',marginTop:8}}>🦙 Adios Perú</div>
+                  <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.16em',marginBottom:8,fontWeight:600}}>Viaggio terminato</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:26,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1.05}}>Speriamo sia andato bene</div>
+                  <div style={{fontSize:12,color:'#A89B7E',marginTop:8}}>🦙 Adios Perú</div>
                 </div>
               ) : inViaggio ? (
                 <div style={{position:'relative'}}>
-                  <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:8,fontWeight:600}}>Sei in viaggio</div>
-                  <div style={{fontFamily:T.fontDisplay,fontSize:34,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1}}>Buon Perù ✈️</div>
-                  <div style={{fontSize:13,color:'#A89B7E',marginTop:8}}>Termina il {fmtDate(TRIP_END)}</div>
+                  <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.16em',marginBottom:8,fontWeight:600}}>Sei in viaggio</div>
+                  <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1.05}}>Buon Perù ✈️</div>
+                  <div style={{fontSize:12,color:'#A89B7E',marginTop:8}}>Termina il {fmtDate(TRIP_END)}</div>
                 </div>
               ) : (
-                <div style={{position:'relative',display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:16}}>
-                  <div>
-                    <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',marginBottom:6,fontWeight:600}}>Alla partenza</div>
-                    <div style={{fontFamily:T.fontDisplay,fontSize:64,fontWeight:700,color:T.goldBright,lineHeight:.9,letterSpacing:'-0.04em'}}>{daysToGo}</div>
-                    <div style={{fontSize:13,color:'#A89B7E',marginTop:8,letterSpacing:'-0.005em'}}>giorni · {fmtDate(TRIP_START)}</div>
+                <div style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:14}}>
+                  <div style={{minWidth:0}}>
+                    <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.16em',fontWeight:700,marginBottom:4,display:'flex',alignItems:'center',gap:5}}>
+                      <Sparkles size={10} color={T.goldBright}/>Alla partenza
+                    </div>
+                    <div style={{display:'flex',alignItems:'baseline',gap:6}}>
+                      <span style={{fontFamily:T.fontDisplay,fontSize:60,fontWeight:700,color:T.goldBright,lineHeight:.9,letterSpacing:'-0.04em'}}>{daysToGo}</span>
+                      <span style={{fontFamily:T.fontDisplay,fontSize:14,color:'#A89B7E',fontWeight:600,letterSpacing:'-0.005em'}}>giorni</span>
+                    </div>
+                    <div style={{fontSize:11,color:'#7C7058',marginTop:4,fontVariantNumeric:'tabular-nums'}}>{fmtDate(TRIP_START)} · {doneCount}/{data.items.length} task</div>
                   </div>
-                  <div style={{textAlign:'right'}}>
-                    <div style={{fontSize:10,color:'#9C8F73',marginBottom:6,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:600}}>Pronto</div>
-                    <div style={{fontSize:26,fontWeight:700,color:'#fff',lineHeight:1,letterSpacing:'-0.02em'}}>{progress}<span style={{fontSize:14,color:'#7C7058',fontWeight:500}}>%</span></div>
-                    <div style={{fontSize:11,color:'#A89B7E',marginTop:6}}>{doneCount}/{data.items.length} task</div>
+                  <div style={{position:'relative',width:62,height:62,flexShrink:0}}>
+                    <svg width="62" height="62" style={{transform:'rotate(-90deg)'}}>
+                      <circle cx="31" cy="31" r="26" stroke="rgba(255,255,255,.08)" strokeWidth="4" fill="none"/>
+                      <circle cx="31" cy="31" r="26" stroke={T.goldBright} strokeWidth="4" fill="none"
+                        strokeDasharray={`${2*Math.PI*26}`}
+                        strokeDashoffset={`${2*Math.PI*26*(1-progress/100)}`}
+                        strokeLinecap="round"
+                        style={{transition:'stroke-dashoffset .8s ease-out'}}/>
+                    </svg>
+                    <div style={{position:'absolute',inset:0,display:'flex',alignItems:'center',justifyContent:'center',fontSize:14,fontWeight:700,color:'#fff',fontVariantNumeric:'tabular-nums'}}>{progress}<span style={{fontSize:9,color:'#9C8F73'}}>%</span></div>
                   </div>
                 </div>
               )}
@@ -604,7 +631,7 @@ export default function App() {
             {/* WEATHER + PROGRESS GRID */}
             <div style={{display:'grid',gridTemplateColumns:currentWeather?'1fr 1fr':'1fr',gap:10}}>
               {currentWeather && (
-                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,padding:'14px 16px'}}>
+                <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,padding:'14px 16px'}}>
                   <div style={{fontSize:10,color:T.textFaint,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700,marginBottom:8}}>Ora qui</div>
                   <div style={{display:'flex',alignItems:'baseline',gap:8,marginBottom:4}}>
                     <span style={{fontSize:32,lineHeight:1}}>{wEmoji(currentWeather.code)}</span>
@@ -615,7 +642,7 @@ export default function App() {
                   </div>
                 </div>
               )}
-              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,padding:'14px 16px',display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
+              <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,padding:'14px 16px',display:'flex',flexDirection:'column',justifyContent:'space-between'}}>
                 <div style={{fontSize:10,color:T.textFaint,textTransform:'uppercase',letterSpacing:'.1em',fontWeight:700}}>Budget</div>
                 <div style={{display:'flex',alignItems:'baseline',gap:6,marginTop:4}}>
                   <span style={{fontFamily:T.fontDisplay,fontSize:24,fontWeight:700,color:T.text,letterSpacing:'-0.02em'}}>{fmtEur(pagato).replace('€ ','')}</span>
@@ -632,7 +659,7 @@ export default function App() {
 
             {/* DA PRENOTARE */}
             {daFare.length > 0 && (
-              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,overflow:'hidden'}}>
+              <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,overflow:'hidden'}}>
                 <div style={{padding:'14px 18px 6px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                   <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim}}>Da prenotare</div>
                   <button onClick={()=>goToChecklist()} style={{background:'none',border:'none',cursor:'pointer',display:'flex',alignItems:'center',gap:2,color:T.gold,fontSize:12,fontWeight:600,fontFamily:T.fontBody}}>
@@ -642,7 +669,7 @@ export default function App() {
                 <div style={{padding:'4px 6px 8px'}}>
                   {daFare.map(({sec,count})=>(
                     <button key={sec} onClick={()=>goToChecklist()} style={{width:'100%',background:'none',border:'none',padding:'10px 12px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',textAlign:'left',borderRadius:12,fontFamily:T.fontBody,transition:'background .15s'}} onMouseEnter={e=>{(e.currentTarget as HTMLElement).style.background=T.surfaceAlt}} onMouseLeave={e=>{(e.currentTarget as HTMLElement).style.background='none'}}>
-                      <div style={{width:30,height:30,borderRadius:8,background:T.surfaceAlt,display:'flex',alignItems:'center',justifyContent:'center',color:T.terra,flexShrink:0}}>
+                      <div style={{width:30,height:30,borderRadius:8,background:T.surfaceAlt,display:'flex',alignItems:'center',justifyContent:'center',color:T.primary,flexShrink:0}}>
                         <SectionIcon sec={sec} size={14}/>
                       </div>
                       <div style={{flex:1,fontSize:14,fontWeight:600,color:T.text,letterSpacing:'-0.005em'}}>{sec.charAt(0)+sec.slice(1).toLowerCase()}</div>
@@ -657,7 +684,7 @@ export default function App() {
             {/* PROSSIMO GIORNO */}
             {prossimoGiorno && (
               <button onClick={()=>setPage('itinerario')} style={{background:'none',border:'none',padding:0,cursor:'pointer',width:'100%',textAlign:'left'}}>
-                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,overflow:'hidden'}}>
+                <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,overflow:'hidden'}}>
                   <div style={{padding:'14px 18px 8px',display:'flex',justifyContent:'space-between',alignItems:'center'}}>
                     <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim}}>Prossima tappa</div>
                     <ArrowRight size={14} color={T.gold}/>
@@ -688,7 +715,7 @@ export default function App() {
 
             {/* PROSSIMO ALLOGGIO */}
             {prossimoAlloggio && (
-              <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,padding:'14px 18px'}}>
+              <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,padding:'14px 18px'}}>
                 <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:8}}>
                   <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim,display:'flex',alignItems:'center',gap:6}}>
                     <Bed size={12} strokeWidth={2}/>Prossimo alloggio
@@ -720,9 +747,7 @@ export default function App() {
             action={
               <>
                 <SearchBtn/>
-                <button onClick={()=>setAddModal(true)} style={{background:T.surfaceDark,border:'none',borderRadius:10,color:T.goldBright,padding:'0 14px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5,height:38,fontFamily:T.fontBody,letterSpacing:'-0.005em'}}>
-                  <Plus size={15}/>Aggiungi
-                </button>
+                <PrimaryActionBtn onClick={()=>setAddModal(true)} icon={<Plus size={15} strokeWidth={2.6}/>} label="Aggiungi"/>
               </>
             }
           />
@@ -755,13 +780,13 @@ export default function App() {
               return (
                 <div key={sec}>
                   <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,paddingLeft:2}}>
-                    <div style={{width:24,height:24,borderRadius:7,background:T.surfaceAlt,color:T.terra,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                    <div style={{width:24,height:24,borderRadius:7,background:T.surfaceAlt,color:T.primary,display:'flex',alignItems:'center',justifyContent:'center'}}>
                       <SectionIcon sec={sec} size={13}/>
                     </div>
                     <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim}}>{sec}</div>
                     <div style={{fontSize:11,color:T.textFaint,fontVariantNumeric:'tabular-nums'}}>{done}/{total}</div>
                   </div>
-                  <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,overflow:'hidden'}}>
+                  <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:18,overflow:'hidden'}}>
                     {items.map((i,idx)=>(
                       <div key={i.id} style={{opacity:i.done?.55:1,borderBottom:idx<items.length-1?`1px solid ${T.borderSoft}`:'none'}}>
                         <div style={{display:'flex',alignItems:'center',gap:12,padding:'13px 14px'}}>
@@ -807,7 +832,7 @@ export default function App() {
           MAPPA
       ══════════════════════════════ */}
       {page==='mappa'&&(
-        <div style={{...PAGE_STYLE,overflow:'hidden',display:'flex',flexDirection:'column'}}>
+        <div style={{height:'100dvh',overflow:'hidden',display:'flex',flexDirection:'column',paddingBottom:'calc(88px + env(safe-area-inset-bottom,0px))',boxSizing:'border-box'}}>
           <PageHeader
             title="Mappa"
             subtitle="Tocca un luogo per i dettagli"
@@ -877,23 +902,32 @@ export default function App() {
             action={
               <>
                 <SearchBtn/>
-                <button onClick={()=>setDayModal(true)} style={{background:T.surfaceDark,border:'none',borderRadius:10,color:T.goldBright,width:38,height:38,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center'}}><Plus size={18}/></button>
+                <PrimaryActionBtn onClick={()=>setDayModal(true)} icon={<Plus size={18} strokeWidth={2.6}/>}/>
               </>
             }
           />
           <div style={{padding:'14px 20px',display:'flex',flexDirection:'column',gap:8}}>
-            {[...data.itinerary].sort((a,b)=>a.day-b.day).map(day=>{
+            {(()=>{
+              const dayCounts: Record<number, number> = {}
+              data.itinerary.forEach(d => { dayCounts[d.day] = (dayCounts[d.day]||0) + 1 })
+              return [...data.itinerary]
+                .sort((a,b) => a.day !== b.day ? a.day - b.day : a.id - b.id)
+                .map((day, _i, arr) => {
               const wd = getWeatherForDay(day)
               const expanded = openDays.has(day.id)
+              const total = dayCounts[day.day]
+              const position = arr.filter(d => d.day === day.day && d.id <= day.id).length
+              const isMultiLeg = total > 1
               return (
                 <div key={day.id} style={{background:T.surface,borderRadius:16,border:`1px solid ${expanded?T.borderStrong:T.border}`,overflow:'hidden',transition:'border-color .15s'}}>
                   <div style={{display:'flex',alignItems:'stretch',cursor:'pointer'}} onClick={()=>setOpenDays(prev=>{ const n=new Set(prev); n.has(day.id)?n.delete(day.id):n.add(day.id); return n })}>
-                    <div style={{background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontDisplay,fontWeight:700,padding:'14px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:62,lineHeight:1}}>
+                    <div style={{background:T.surfaceDark,color:T.goldBright,fontFamily:T.fontDisplay,fontWeight:700,padding:'14px 12px',display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',minWidth:62,lineHeight:1,position:'relative'}}>
                       <div style={{fontSize:16,letterSpacing:'-0.01em'}}>{fmtDate(day.date)}</div>
-                      <div style={{fontFamily:T.fontBody,fontSize:9,color:'#9C8F73',fontWeight:500,marginTop:4,letterSpacing:'.08em'}}>G{day.day}</div>
+                      <div style={{fontFamily:T.fontBody,fontSize:9,color:'#9C8F73',fontWeight:500,marginTop:4,letterSpacing:'.08em'}}>G{day.day}{isMultiLeg && <span style={{color:T.goldBright}}> · {position}/{total}</span>}</div>
                     </div>
                     <div style={{flex:1,padding:'13px 12px',minWidth:0}}>
                       <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
+                        {isMultiLeg && <div style={{fontSize:9,fontWeight:700,color:T.primary,letterSpacing:'.1em',textTransform:'uppercase',background:T.primarySoft,padding:'2px 6px',borderRadius:99,alignSelf:'center'}}>Tappa {position}</div>}
                         <div style={{fontFamily:T.fontDisplay,fontSize:15.5,fontWeight:700,lineHeight:1.25,flex:1,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
                         <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={13}/></button>
                         <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={13}/></button>
@@ -952,12 +986,16 @@ export default function App() {
                           </div>
                         )
                       })()}
-                      <button onClick={()=>setActModal(day.id)} style={{width:'100%',background:'none',border:'none',borderTop:`1px dashed ${T.borderStrong}`,padding:'12px',fontFamily:T.fontBody,fontSize:13,color:T.textDim,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontWeight:500}}><Plus size={14}/>Aggiungi attività</button>
+                      <div style={{display:'flex',borderTop:`1px dashed ${T.borderStrong}`}}>
+                        <button onClick={()=>setActModal(day.id)} style={{flex:1,background:'none',border:'none',padding:'12px',fontFamily:T.fontBody,fontSize:13,color:T.textDim,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontWeight:500}}><Plus size={14}/>Attività</button>
+                        <button onClick={()=>openAddTappa(day)} style={{flex:1,background:'none',border:'none',borderLeft:`1px dashed ${T.borderStrong}`,padding:'12px',fontFamily:T.fontBody,fontSize:13,color:T.primary,cursor:'pointer',display:'flex',alignItems:'center',justifyContent:'center',gap:6,fontWeight:600}}><Plus size={14}/>Tappa parallela</button>
+                      </div>
                     </div>
                   )}
                 </div>
               )
-            })}
+            })
+            })()}
           </div>
           <div style={{height:80}}/>
         </div>
@@ -974,12 +1012,19 @@ export default function App() {
             action={<SearchBtn/>}
           />
           <div style={{padding:'16px 20px',display:'flex',flexDirection:'column',gap:14}}>
-            <div style={{background:T.surfaceDark,borderRadius:22,padding:'22px 22px 24px',color:'#fff',position:'relative',overflow:'hidden'}}>
-              <div style={{position:'absolute',top:-40,right:-40,width:140,height:140,borderRadius:'50%',background:`radial-gradient(circle,${T.gold}30,transparent 70%)`}}/>
+            <div style={{background:T.surfaceDark,borderRadius:24,padding:'28px 24px 26px',color:'#fff',position:'relative',overflow:'hidden',boxShadow:T.shadowHero}}>
+              <div style={{position:'absolute',top:-80,right:-80,width:240,height:240,borderRadius:'50%',background:`radial-gradient(circle,${T.primaryBright}30,transparent 65%)`,filter:'blur(6px)'}}/>
+              <div style={{position:'absolute',bottom:-40,right:30,width:120,height:120,borderRadius:'50%',background:`radial-gradient(circle,${T.gold}25,transparent 65%)`,filter:'blur(6px)'}}/>
               <div style={{position:'relative'}}>
-                <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.12em',fontWeight:600,marginBottom:6}}>Budget a persona</div>
-                <div style={{fontFamily:T.fontDisplay,fontSize:42,fontWeight:700,color:T.goldBright,lineHeight:1,letterSpacing:'-0.03em'}}>{fmtEur(total)}</div>
-                <div style={{fontSize:12,color:'#A89B7E',marginTop:6}}>Coppia: {fmtEur(total*2)}</div>
+                <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.16em',fontWeight:700,marginBottom:10}}>Budget a persona</div>
+                <div style={{display:'flex',alignItems:'baseline',gap:4}}>
+                  <span style={{fontFamily:T.fontDisplay,fontSize:18,fontWeight:600,color:T.goldBright,letterSpacing:'-0.02em',marginRight:4}}>€</span>
+                  <span style={{fontFamily:T.fontDisplay,fontSize:64,fontWeight:700,color:T.goldBright,lineHeight:.9,letterSpacing:'-0.04em'}}>{Number(total).toLocaleString('it-IT')}</span>
+                </div>
+                <div style={{marginTop:14,paddingTop:14,borderTop:'1px solid rgba(255,255,255,.08)',display:'flex',justifyContent:'space-between',alignItems:'center',fontSize:12,color:'#A89B7E'}}>
+                  <span>Coppia · <strong style={{color:'#E5DBC5',fontWeight:600}}>{fmtEur(total*2)}</strong></span>
+                  <span style={{display:'flex',alignItems:'center',gap:5}}><span style={{width:6,height:6,borderRadius:99,background:T.success}}/>{Math.round(spent/total*100)}% confermato</span>
+                </div>
               </div>
             </div>
             <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
@@ -989,7 +1034,7 @@ export default function App() {
                 {v:fmtEur(total-spent),l:'Da prenotare', dot:T.danger,  sub:'da fare'},
                 {v:fmtEur(total*2),   l:'Coppia',        dot:T.gold,    sub:'entrambi'},
               ].map((st,i)=>(
-                <div key={i} style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,padding:'14px 16px'}}>
+                <div key={i} style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:18,padding:'14px 16px'}}>
                   <div style={{display:'flex',alignItems:'center',gap:6,marginBottom:6}}>
                     <div style={{width:7,height:7,borderRadius:99,background:st.dot}}/>
                     <div style={{fontSize:11,fontWeight:600,color:T.textDim,textTransform:'uppercase',letterSpacing:'.05em'}}>{st.l}</div>
@@ -1004,7 +1049,7 @@ export default function App() {
               data.items.forEach(i=>{ if(!byCat[i.cat]) byCat[i.cat]={b:0,p:0,c:0}; byCat[i.cat].b+=i.costo; if(i.done&&!i.cancGratuita) byCat[i.cat].p+=i.costo; if(i.done&&i.cancGratuita) byCat[i.cat].c+=i.costo })
               const entries = Object.entries(byCat).sort((a,b)=>b[1].b-a[1].b)
               return (
-                <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:18,overflow:'hidden'}}>
+                <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,overflow:'hidden'}}>
                   <div style={{padding:'14px 18px 10px',fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim,borderBottom:`1px solid ${T.borderSoft}`}}>Per categoria</div>
                   {entries.map(([cat,v],idx)=>{
                     const pct = Math.round(v.b/total*100)
@@ -1047,7 +1092,7 @@ export default function App() {
             action={
               <>
                 <SearchBtn/>
-                <button onClick={()=>setDocModal(true)} style={{background:T.surfaceDark,border:'none',borderRadius:10,color:T.goldBright,padding:'0 14px',fontSize:13,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:5,height:38,fontFamily:T.fontBody}}><Plus size={15}/>Aggiungi</button>
+                <PrimaryActionBtn onClick={()=>setDocModal(true)} icon={<Plus size={15} strokeWidth={2.6}/>} label="Aggiungi"/>
               </>
             }
           />
@@ -1058,7 +1103,7 @@ export default function App() {
               </div>
               <div style={{fontFamily:T.fontDisplay,fontSize:20,fontWeight:700,color:T.text,letterSpacing:'-0.015em'}}>Nessun documento</div>
               <div style={{marginTop:8,fontSize:13.5,color:T.textDim,lineHeight:1.5,maxWidth:280}}>Salva qui link di prenotazione, biglietti PDF o conferme da rileggere prima del viaggio.</div>
-              <button onClick={()=>setDocModal(true)} style={{marginTop:24,background:T.surfaceDark,color:T.goldBright,border:'none',borderRadius:12,padding:'13px 24px',fontFamily:T.fontBody,fontSize:14,fontWeight:600,cursor:'pointer',display:'flex',alignItems:'center',gap:6}}><Plus size={16}/>Aggiungi documento</button>
+              <button onClick={()=>setDocModal(true)} style={{marginTop:24,background:T.primary,color:'#fff',border:'none',borderRadius:14,padding:'14px 26px',fontFamily:T.fontBody,fontSize:14,fontWeight:700,cursor:'pointer',display:'flex',alignItems:'center',gap:6,boxShadow:`0 4px 14px ${T.primary}40`}}><Plus size={16} strokeWidth={2.6}/>Aggiungi documento</button>
             </div>
           ) : (
             <div style={{padding:'14px 20px 100px',display:'flex',flexDirection:'column',gap:18}}>
@@ -1068,13 +1113,13 @@ export default function App() {
                 return Object.entries(grouped).map(([cat, docs])=>(
                   <div key={cat}>
                     <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:8,paddingLeft:2}}>
-                      <div style={{width:24,height:24,borderRadius:7,background:T.surfaceAlt,color:T.terra,display:'flex',alignItems:'center',justifyContent:'center'}}>
+                      <div style={{width:24,height:24,borderRadius:7,background:T.surfaceAlt,color:T.primary,display:'flex',alignItems:'center',justifyContent:'center'}}>
                         <CatIcon cat={cat} size={12}/>
                       </div>
                       <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim}}>{cat}</div>
                       <div style={{fontSize:11,color:T.textFaint}}>{docs.length}</div>
                     </div>
-                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:16,overflow:'hidden'}}>
+                    <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:18,overflow:'hidden'}}>
                       {docs.map((doc,idx)=>(
                         <div key={doc.id} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:idx<docs.length-1?`1px solid ${T.borderSoft}`:'none'}}>
                           <div style={{width:38,height:38,borderRadius:10,background:doc.type==='link'?T.infoSoft:'#F3E8FF',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
@@ -1128,27 +1173,28 @@ export default function App() {
             ))}
           </div>
           <div style={{height:100}}/>
-          <button onClick={addNote} style={{position:'fixed',bottom:'calc(76px + env(safe-area-inset-bottom,0px) + 14px)',right:'max(20px, calc(50vw - 280px))',width:54,height:54,background:T.surfaceDark,color:T.goldBright,border:'none',borderRadius:'50%',cursor:'pointer',boxShadow:'0 8px 24px rgba(20,16,12,.3)',display:'flex',alignItems:'center',justifyContent:'center',zIndex:150}}><Plus size={22}/></button>
+          <button onClick={addNote} style={{position:'fixed',bottom:'calc(110px + env(safe-area-inset-bottom,0px))',right:'max(24px, calc(50vw - 280px))',width:56,height:56,background:T.primary,color:'#fff',border:'none',borderRadius:'50%',cursor:'pointer',boxShadow:T.shadowHero,display:'flex',alignItems:'center',justifyContent:'center',zIndex:150,transition:'transform .15s'}}><Plus size={24} strokeWidth={2.5}/></button>
         </div>
       )}
 
-      {/* ══ BOTTOM NAV ══ */}
-      <nav style={{position:'fixed',bottom:0,left:0,right:0,background:T.surfaceDark,display:'flex',zIndex:200,paddingBottom:'env(safe-area-inset-bottom,0px)',maxWidth:600,margin:'0 auto',borderTop:`1px solid ${T.surfaceDarkSoft}`}}>
-        {navItems.map(({id,icon,lbl})=>{
-          const active = page===id
-          return (
-            <button key={id} onClick={()=>setPage(id)} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:'10px 2px 9px',border:'none',background:'none',color:active?T.goldBright:'#7C7058',fontFamily:T.fontBody,fontSize:9.5,fontWeight:600,letterSpacing:'.04em',textTransform:'uppercase',cursor:'pointer',gap:4,position:'relative',transition:'color .15s'}}>
-              {active && <div style={{position:'absolute',top:0,left:'50%',transform:'translateX(-50%)',width:24,height:2,background:T.goldBright,borderRadius:'0 0 2px 2px'}}/>}
-              {icon}
-              {lbl}
-            </button>
-          )
-        })}
-      </nav>
+      {/* ══ BOTTOM NAV — floating glass ══ */}
+      <div style={{position:'fixed',bottom:0,left:0,right:0,maxWidth:600,margin:'0 auto',zIndex:1100,paddingBottom:'env(safe-area-inset-bottom,0px)',pointerEvents:'none',background:`linear-gradient(to top,${T.bg} 50%,${T.bg}00)`}}>
+        <nav style={{margin:'12px 14px 14px',background:T.surfaceDark,display:'flex',borderRadius:22,padding:'8px 6px',boxShadow:T.shadowLg,pointerEvents:'auto'}}>
+          {navItems.map(({id,icon,lbl})=>{
+            const active = page===id
+            return (
+              <button key={id} onClick={()=>setPage(id)} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',justifyContent:'center',padding:active?'8px 4px 7px':'9px 4px 8px',border:'none',background:active?'rgba(240,198,84,.12)':'transparent',color:active?T.goldBright:'#807464',fontFamily:T.fontBody,fontSize:9,fontWeight:700,letterSpacing:'.04em',textTransform:'uppercase',cursor:'pointer',gap:3,borderRadius:14,position:'relative',transition:'all .2s'}}>
+                {icon}
+                <span style={{opacity:active?1:.85}}>{lbl}</span>
+              </button>
+            )
+          })}
+        </nav>
+      </div>
 
       {/* ══ SEARCH OVERLAY ══ */}
       {searchOpen&&(
-        <div style={{position:'fixed',inset:0,background:T.bg,zIndex:600,display:'flex',flexDirection:'column',maxWidth:600,margin:'0 auto',animation:'fadeIn .15s ease-out'}}>
+        <div style={{position:'fixed',inset:0,background:T.bg,zIndex:1200,display:'flex',flexDirection:'column',maxWidth:600,margin:'0 auto',animation:'fadeIn .15s ease-out'}}>
           <div style={{padding:'14px 16px',display:'flex',gap:10,alignItems:'center',background:T.surface,borderBottom:`1px solid ${T.border}`}}>
             <Search size={18} color={T.textDim}/>
             <input autoFocus value={searchQ} onChange={e=>setSearchQ(e.target.value)} placeholder="Cerca voci, attività, note…" style={{flex:1,border:'none',background:'transparent',color:T.text,fontFamily:T.fontBody,fontSize:15,outline:'none'}}/>
@@ -1167,7 +1213,7 @@ export default function App() {
                 {searchResults.items.length>0&&(
                   <div style={{marginBottom:16}}>
                     <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><CheckSquare size={12}/>Checklist · {searchResults.items.length}</div>
-                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                    <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:16,overflow:'hidden'}}>
                       {searchResults.items.map((item,idx)=>(
                         <button key={item.id} onClick={()=>{setPage('checklist');setFilter('Tutto');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.items.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
                           <CatBadge cat={item.cat} size="sm"/>
@@ -1182,7 +1228,7 @@ export default function App() {
                 {searchResults.days.length>0&&(
                   <div style={{marginBottom:16}}>
                     <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><Calendar size={12}/>Itinerario · {searchResults.days.length}</div>
-                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                    <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:16,overflow:'hidden'}}>
                       {searchResults.days.map((day,idx)=>(
                         <button key={day.id} onClick={()=>{setPage('itinerario');setOpenDays(new Set([day.id]));setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.days.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
                           <div style={{background:T.surfaceDark,color:T.goldBright,borderRadius:8,padding:'3px 8px',fontFamily:T.fontDisplay,fontSize:12.5,fontWeight:700,flexShrink:0}}>G{day.day}</div>
@@ -1199,7 +1245,7 @@ export default function App() {
                 {searchResults.notes.length>0&&(
                   <div style={{marginBottom:16}}>
                     <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><StickyNote size={12}/>Note · {searchResults.notes.length}</div>
-                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                    <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:16,overflow:'hidden'}}>
                       {searchResults.notes.map((note,idx)=>(
                         <button key={note.id} onClick={()=>{setPage('note');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.notes.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:12,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
                           <div style={{width:10,height:10,borderRadius:99,background:note.color,flexShrink:0}}/>
@@ -1213,7 +1259,7 @@ export default function App() {
                 {searchResults.docs.length>0&&(
                   <div style={{marginBottom:16}}>
                     <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.1em',color:T.textDim,padding:'10px 4px 8px',display:'flex',alignItems:'center',gap:6}}><FolderOpen size={12}/>Documenti · {searchResults.docs.length}</div>
-                    <div style={{background:T.surface,border:`1px solid ${T.border}`,borderRadius:14,overflow:'hidden'}}>
+                    <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:16,overflow:'hidden'}}>
                       {searchResults.docs.map((doc,idx)=>(
                         <button key={doc.id} onClick={()=>{setPage('documenti');setSearchOpen(false);setSearchQ('')}} style={{width:'100%',background:'none',border:'none',borderBottom:idx<searchResults.docs.length-1?`1px solid ${T.borderSoft}`:'none',padding:'11px 14px',display:'flex',alignItems:'center',gap:10,cursor:'pointer',textAlign:'left',fontFamily:T.fontBody}}>
                           {doc.type==='link'?<Link2 size={14} color={T.info}/>:<File size={14} color="#7E22CE"/>}

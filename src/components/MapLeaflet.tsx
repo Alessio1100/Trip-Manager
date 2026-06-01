@@ -64,7 +64,12 @@ export default function MapLeaflet({ itinerary, onLocationClick }: Props) {
         byCoords[k].places.add(day.place)
       }
 
-      // Build route polyline (unique positions in order)
+      // ── Brand palette (matches bottom nav)
+      const DARK = '#0C0907'        // surfaceDark
+      const GOLD = '#F0C654'        // goldBright
+      const ROUTE = '#B23A0F'       // primary terracotta
+
+      // ── Build route (unique positions in order)
       const route: [number, number][] = []
       let lastKey = ''
       for (const day of sorted) {
@@ -73,24 +78,67 @@ export default function MapLeaflet({ itinerary, onLocationClick }: Props) {
         const k = `${c[0].toFixed(4)},${c[1].toFixed(4)}`
         if (k !== lastKey) { route.push(c); lastKey = k }
       }
+
+      // ── ROUTE: solid double line for depth + visible flow
       if (route.length > 1) {
-        L.polyline(route, { color: '#E8B84B', weight: 3, opacity: 0.8, dashArray: '10,6' }).addTo(map)
+        L.polyline(route, { color: '#FFFFFF', weight: 7, opacity: 0.9, lineCap: 'round', lineJoin: 'round' }).addTo(map)
+        L.polyline(route, { color: ROUTE,     weight: 3.5, opacity: 1,   lineCap: 'round', lineJoin: 'round' }).addTo(map)
+
+        // ── Direction arrows at each segment midpoint
+        for (let i = 0; i < route.length - 1; i++) {
+          const [lat1, lon1] = route[i]
+          const [lat2, lon2] = route[i + 1]
+          if (Math.abs(lat1 - lat2) < 0.001 && Math.abs(lon1 - lon2) < 0.001) continue
+          const midLat = (lat1 + lat2) / 2
+          const midLon = (lon1 + lon2) / 2
+          const angleDeg = Math.atan2(-(lat2 - lat1), lon2 - lon1) * 180 / Math.PI
+          const arrow = L.divIcon({
+            className: '',
+            html: `<div style="width:20px;height:20px;background:#FFFFFF;border-radius:50%;display:flex;align-items:center;justify-content:center;box-shadow:0 2px 6px rgba(178,58,15,.35);transform:rotate(${angleDeg}deg)">
+                     <svg width="10" height="10" viewBox="0 0 10 10" style="display:block">
+                       <path d="M2 5 L8 5 M8 5 L5 2 M8 5 L5 8" stroke="${ROUTE}" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round" fill="none"/>
+                     </svg>
+                   </div>`,
+            iconSize: [20, 20],
+            iconAnchor: [10, 10],
+          })
+          L.marker([midLat, midLon], { icon: arrow, interactive: false, keyboard: false }).addTo(map)
+        }
       }
 
-      // Add one marker per coordinate group
+      // ── PINS: classic Maps teardrop, one per DAY (offset stacks)
+      const OFFSET_R = 0.006 // ~660 m, keeps stacked days close but distinct
+
       for (const { coords, days, places } of Object.values(byCoords)) {
-        const label   = days.map(d => `G${d.day}`).join('·')
-        const tooltip = [...places].join(' / ')
-        const w = Math.max(34, label.length * 7.5 + 18)
-        const icon = L.divIcon({
-          className: '',
-          html: `<div style="background:#171310;color:#E8B84B;border:2px solid #E8B84B;border-radius:18px;min-width:${w}px;height:30px;display:flex;align-items:center;justify-content:center;padding:0 8px;font-size:10px;font-weight:700;font-family:'DM Sans',sans-serif;box-shadow:0 4px 14px rgba(23,19,16,.45);cursor:pointer;white-space:nowrap;letter-spacing:-0.01em">${label}</div>`,
-          iconSize: [w, 30],
-          iconAnchor: [w / 2, 15],
+        const placeLabel = [...places].join(' / ')
+        days.forEach((day, idx) => {
+          let lat = coords[0]
+          let lon = coords[1]
+          if (idx > 0 && days.length > 1) {
+            // distribute offset days around a circle, first stays at center
+            const angle = ((idx - 1) / (days.length - 1)) * 2 * Math.PI - Math.PI / 2
+            lat += OFFSET_R * Math.cos(angle)
+            lon += OFFSET_R * Math.sin(angle) / Math.cos(coords[0] * Math.PI / 180)
+          }
+
+          const icon = L.divIcon({
+            className: '',
+            html: `<svg width="26" height="34" viewBox="0 0 26 34" style="filter:drop-shadow(0 3px 4px rgba(12,9,7,.4));overflow:visible">
+                     <path d="M13 1.2 C6.4 1.2 1.2 6.4 1.2 13 C1.2 21.5 13 32.8 13 32.8 C13 32.8 24.8 21.5 24.8 13 C24.8 6.4 19.6 1.2 13 1.2 Z"
+                           fill="${DARK}" stroke="${GOLD}" stroke-width="1.7"/>
+                     <text x="13" y="17.5" text-anchor="middle"
+                           font-family="'DM Sans',system-ui,sans-serif"
+                           font-size="11" font-weight="700"
+                           fill="${GOLD}" letter-spacing="-0.02em">${day.day}</text>
+                   </svg>`,
+            iconSize: [26, 34],
+            iconAnchor: [13, 32],
+          })
+
+          const marker = L.marker([lat, lon], { icon, riseOnHover: true }).addTo(map)
+          marker.bindTooltip(`<strong>G${day.day}</strong> · ${placeLabel}`, { permanent: false, direction: 'top', offset: [0, -32] })
+          marker.on('click', () => cbRef.current(day.place, [day]))
         })
-        const marker = L.marker(coords, { icon }).addTo(map)
-        marker.bindTooltip(`<strong>${tooltip}</strong>`, { permanent: false, direction: 'top', offset: [0, -18] })
-        marker.on('click', () => cbRef.current(days[0].place, days))
       }
 
       mapRef.current = map
