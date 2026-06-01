@@ -43,6 +43,7 @@ const PLACE_COORDS: Record<string, [number, number]> = {
   'Machu Picchu':    [-13.1631, -72.5450],
   'Lima':            [-12.0464, -77.0428],
   'Miami':           [ 25.7617, -80.1918],
+  'Roma':            [ 41.9028,  12.4964],
 }
 
 /* ─── WEATHER UTILS ─── */
@@ -174,10 +175,12 @@ export default function App() {
   const saveTimeout = useRef<ReturnType<typeof setTimeout>|null>(null)
 
   /* modals */
-  const [addModal,  setAddModal]  = useState(false)
-  const [editModal, setEditModal] = useState<Item|null>(null)
-  const [actModal,  setActModal]  = useState<number|null>(null)
-  const [dayModal,  setDayModal]  = useState(false)
+  const [addModal,     setAddModal]     = useState(false)
+  const [editModal,    setEditModal]    = useState<Item|null>(null)
+  const [actModal,     setActModal]     = useState<number|null>(null)
+  const [dayModal,     setDayModal]     = useState(false)
+  const [editDayModal, setEditDayModal] = useState<Day|null>(null)
+  const [editActModal, setEditActModal] = useState<{dayId:number; actIdx:number}|null>(null)
 
   /* add-item form */
   const [fVoce,setFVoce]=useState(''); const [fSec,setFSec]=useState(SECTIONS[0]); const [fCat,setFCat]=useState(CATS[0])
@@ -339,6 +342,26 @@ export default function App() {
   }
   const deleteDay      = (id:number) => { if(!confirm('Eliminare questo giorno?')) return; save({...data, itinerary: data.itinerary.filter(d=>d.id!==id)}) }
   const deleteActivity = (dayId:number, idx:number) => { if(!confirm('Eliminare?')) return; save({...data, itinerary: data.itinerary.map(d=>d.id===dayId?{...d,activities:d.activities.filter((_,i)=>i!==idx)}:d)}) }
+
+  const openEditDay  = (day:Day) => { setDTitle(day.title); setDDate(day.date); setDNum(String(day.day)); setDPlace(day.place); setDHotel(day.hotel||''); setEditDayModal(day) }
+  const saveEditDay  = () => {
+    if(!editDayModal||!dTitle.trim()) return
+    save({...data, itinerary: data.itinerary.map(d=>d.id===editDayModal.id?{...d,title:dTitle.trim(),date:dDate,day:parseInt(dNum)||d.day,place:dPlace,hotel:dHotel}:d)})
+    setEditDayModal(null); setDTitle(''); setDDate(''); setDNum(''); setDPlace(''); setDHotel('')
+  }
+  const openEditActivity = (dayId:number, actIdx:number) => {
+    const act = data.itinerary.find(d=>d.id===dayId)?.activities[actIdx]
+    if(!act) return
+    setATitle(act.title); setATime(act.time||'09:00'); setANote(act.note||'')
+    setAType(ACT_TYPES.find(t=>t.split(' ')[0]===act.type)||ACT_TYPES[0])
+    setEditActModal({dayId, actIdx})
+  }
+  const saveEditActivity = () => {
+    if(!editActModal||!aTitle.trim()) return
+    const {dayId, actIdx} = editActModal
+    save({...data, itinerary: data.itinerary.map(d=>d.id===dayId?{...d,activities:d.activities.map((a,i)=>i===actIdx?{time:aTime,type:aType.split(' ')[0],title:aTitle.trim(),note:aNote}:a).sort((a,b)=>a.time.localeCompare(b.time))}:d)})
+    setEditActModal(null); setATitle(''); setATime('09:00'); setANote('')
+  }
 
   /* ── NOTE ACTIONS ── */
   const saveNote  = (id:number, field:'title'|'text', val:string) => save({...data, notes: data.notes.map(n=>n.id===id?{...n,[field]:val}:n)})
@@ -716,6 +739,7 @@ export default function App() {
                   <div style={{flex:1,padding:'12px 10px',minWidth:0}}>
                     <div style={{display:'flex',alignItems:'center',gap:6}}>
                       <div style={{fontSize:'.9rem',fontWeight:700,lineHeight:1.3,flex:1}}>{day.title}</div>
+                      <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',display:'flex',alignItems:'center'}}><Pencil size={13} color="#C9992A"/></button>
                       <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',display:'flex',alignItems:'center'}}><Trash2 size={13} color="#ccc"/></button>
                     </div>
                     <div style={{fontSize:'.73rem',color:'#7A6845',marginTop:3,display:'flex',gap:8,flexWrap:'wrap'}}>
@@ -743,6 +767,7 @@ export default function App() {
                         <div style={{fontSize:'.7rem',fontWeight:700,color:'#C9992A',minWidth:36,paddingTop:2,display:'flex',alignItems:'center',gap:2}}><Clock size={9}/>{a.time||'—'}</div>
                         <div style={{fontSize:'.95rem',paddingTop:1}}>{a.type}</div>
                         <div style={{flex:1}}><div style={{fontSize:'.84rem',fontWeight:600,lineHeight:1.3}}>{a.title}</div>{a.note&&<div style={{fontSize:'.74rem',color:'#7A6845',marginTop:1}}>{a.note}</div>}</div>
+                        <button onClick={()=>openEditActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',flexShrink:0,display:'flex',alignItems:'center',paddingTop:4}}><Pencil size={12} color="#C9992A"/></button>
                         <button onClick={()=>deleteActivity(day.id,i)} style={{background:'none',border:'none',cursor:'pointer',padding:'2px',flexShrink:0,display:'flex',alignItems:'center',paddingTop:4}}><Trash2 size={13} color="#ccc"/></button>
                       </div>
                     ))}
@@ -1077,8 +1102,40 @@ export default function App() {
         <Modal title="Aggiungi Giorno" onClose={()=>setDayModal(false)}>
           <FG label="Titolo"><input style={inputStyle} value={dTitle} onChange={e=>setDTitle(e.target.value)} placeholder="es. Arequipa – Città Bianca"/></FG>
           <FRow><FRowItem label="Data"><input style={inputStyle} type="date" value={dDate} onChange={e=>setDDate(e.target.value)}/></FRowItem><FRowItem label="N° Giorno"><input style={inputStyle} type="number" value={dNum} onChange={e=>setDNum(e.target.value)}/></FRowItem></FRow>
-          <FRow><FRowItem label="Luogo"><input style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)} placeholder="es. Arequipa"/></FRowItem><FRowItem label="Alloggio"><input style={inputStyle} value={dHotel} onChange={e=>setDHotel(e.target.value)} placeholder="es. Hostal"/></FRowItem></FRow>
+          <FRow>
+            <FRowItem label="Luogo (pin mappa)">
+              <select style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)}>
+                <option value="">— Seleziona —</option>
+                {Object.keys(PLACE_COORDS).sort().map(p=><option key={p} value={p}>{p}</option>)}
+              </select>
+            </FRowItem>
+            <FRowItem label="Alloggio"><input style={inputStyle} value={dHotel} onChange={e=>setDHotel(e.target.value)} placeholder="es. Hostal"/></FRowItem>
+          </FRow>
           <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setDayModal(false)}>Annulla</button><button style={S.btn} onClick={saveDay}>Aggiungi</button></div>
+        </Modal>
+      )}
+      {editDayModal&&(
+        <Modal title={`Modifica G${editDayModal.day} · ${editDayModal.title}`} onClose={()=>setEditDayModal(null)}>
+          <FG label="Titolo"><input style={inputStyle} value={dTitle} onChange={e=>setDTitle(e.target.value)}/></FG>
+          <FRow><FRowItem label="Data"><input style={inputStyle} type="date" value={dDate} onChange={e=>setDDate(e.target.value)}/></FRowItem><FRowItem label="N° Giorno"><input style={inputStyle} type="number" value={dNum} onChange={e=>setDNum(e.target.value)}/></FRowItem></FRow>
+          <FRow>
+            <FRowItem label="Luogo (pin mappa)">
+              <select style={inputStyle} value={dPlace} onChange={e=>setDPlace(e.target.value)}>
+                <option value="">— Seleziona —</option>
+                {Object.keys(PLACE_COORDS).sort().map(p=><option key={p} value={p}>{p}</option>)}
+              </select>
+            </FRowItem>
+            <FRowItem label="Alloggio"><input style={inputStyle} value={dHotel} onChange={e=>setDHotel(e.target.value)}/></FRowItem>
+          </FRow>
+          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setEditDayModal(null)}>Annulla</button><button style={S.btn} onClick={saveEditDay}>Salva</button></div>
+        </Modal>
+      )}
+      {editActModal!==null&&(
+        <Modal title="Modifica attività" onClose={()=>setEditActModal(null)}>
+          <FG label="Titolo"><input style={inputStyle} value={aTitle} onChange={e=>setATitle(e.target.value)}/></FG>
+          <FRow><FRowItem label="Ora"><input style={inputStyle} type="time" value={aTime} onChange={e=>setATime(e.target.value)}/></FRowItem><FRowItem label="Tipo"><select style={inputStyle} value={aType} onChange={e=>setAType(e.target.value)}>{ACT_TYPES.map(t=><option key={t}>{t}</option>)}</select></FRowItem></FRow>
+          <FG label="Note"><input style={inputStyle} value={aNote} onChange={e=>setANote(e.target.value)}/></FG>
+          <div style={{display:'flex',gap:10,padding:'14px 20px 0'}}><button style={S.btnC} onClick={()=>setEditActModal(null)}>Annulla</button><button style={S.btn} onClick={saveEditActivity}>Salva</button></div>
         </Modal>
       )}
 

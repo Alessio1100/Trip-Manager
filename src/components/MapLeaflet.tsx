@@ -52,40 +52,46 @@ export default function MapLeaflet({ itinerary, onLocationClick }: Props) {
         maxZoom: 18,
       }).addTo(map)
 
-      // Group days by place
-      const byPlace: Record<string, Day[]> = {}
-      for (const day of [...itinerary].sort((a, b) => a.day - b.day)) {
-        if (!byPlace[day.place]) byPlace[day.place] = []
-        byPlace[day.place].push(day)
+      // Group days by COORDINATES (merges places with same lat/lon)
+      const sorted = [...itinerary].sort((a, b) => a.day - b.day)
+      const byCoords: Record<string, { coords:[number,number]; days:Day[]; places:Set<string> }> = {}
+      for (const day of sorted) {
+        const c = PLACE_COORDS[day.place]
+        if (!c) continue
+        const k = `${c[0].toFixed(4)},${c[1].toFixed(4)}`
+        if (!byCoords[k]) byCoords[k] = { coords: c, days: [], places: new Set() }
+        byCoords[k].days.push(day)
+        byCoords[k].places.add(day.place)
       }
 
       // Build route polyline (unique positions in order)
       const route: [number, number][] = []
       let lastKey = ''
-      for (const day of [...itinerary].sort((a, b) => a.day - b.day)) {
+      for (const day of sorted) {
         const c = PLACE_COORDS[day.place]
         if (!c) continue
-        const k = `${c[0]},${c[1]}`
+        const k = `${c[0].toFixed(4)},${c[1].toFixed(4)}`
         if (k !== lastKey) { route.push(c); lastKey = k }
       }
       if (route.length > 1) {
         L.polyline(route, { color: '#E8B84B', weight: 3, opacity: 0.8, dashArray: '10,6' }).addTo(map)
       }
 
-      // Add markers
-      for (const [place, days] of Object.entries(byPlace)) {
-        const coords = PLACE_COORDS[place]
-        if (!coords) continue
-        const label = days.map(d => `G${d.day}`).join('·')
+      // Add one marker per coordinate group
+      for (const { coords, days, places } of Object.values(byCoords)) {
+        const label    = days.map(d => `G${d.day}`).join('·')
+        const tooltip  = [...places].join(' / ')
+        // Scale marker width to fit longer labels
+        const w = Math.max(32, label.length * 7 + 16)
         const icon = L.divIcon({
           className: '',
-          html: `<div style="background:#1A1208;color:#E8B84B;border:2.5px solid #E8B84B;border-radius:50%;width:32px;height:32px;display:flex;align-items:center;justify-content:center;font-size:9px;font-weight:700;font-family:sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.5);cursor:pointer">${label}</div>`,
-          iconSize: [32, 32],
-          iconAnchor: [16, 16],
+          html: `<div style="background:#1A1208;color:#E8B84B;border:2.5px solid #E8B84B;border-radius:16px;min-width:${w}px;height:28px;display:flex;align-items:center;justify-content:center;padding:0 6px;font-size:9px;font-weight:700;font-family:sans-serif;box-shadow:0 2px 12px rgba(0,0,0,.5);cursor:pointer;white-space:nowrap">${label}</div>`,
+          iconSize: [w, 28],
+          iconAnchor: [w / 2, 14],
         })
         const marker = L.marker(coords, { icon }).addTo(map)
-        marker.bindTooltip(`<strong>${place}</strong>`, { permanent: false, direction: 'top', offset: [0, -18] })
-        marker.on('click', () => cbRef.current(place, days))
+        marker.bindTooltip(`<strong>${tooltip}</strong>`, { permanent: false, direction: 'top', offset: [0, -16] })
+        marker.on('click', () => cbRef.current(days[0].place, days))
       }
 
       mapRef.current = map
