@@ -926,11 +926,13 @@ export default function App() {
                       <div style={{fontFamily:T.fontBody,fontSize:9,color:'#9C8F73',fontWeight:500,marginTop:4,letterSpacing:'.08em'}}>G{day.day}{isMultiLeg && <span style={{color:T.goldBright}}> · {position}/{total}</span>}</div>
                     </div>
                     <div style={{flex:1,padding:'13px 12px',minWidth:0}}>
-                      <div style={{display:'flex',alignItems:'flex-start',gap:8}}>
-                        {isMultiLeg && <div style={{fontSize:9,fontWeight:700,color:T.primary,letterSpacing:'.1em',textTransform:'uppercase',background:T.primarySoft,padding:'2px 6px',borderRadius:99,alignSelf:'center'}}>Tappa {position}</div>}
-                        <div style={{fontFamily:T.fontDisplay,fontSize:15.5,fontWeight:700,lineHeight:1.25,flex:1,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
-                        <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textDim}}><Pencil size={13}/></button>
-                        <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textFaint}}><Trash2 size={13}/></button>
+                      <div style={{display:'flex',alignItems:'flex-start',gap:6}}>
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontFamily:T.fontDisplay,fontSize:15.5,fontWeight:700,lineHeight:1.25,color:T.text,letterSpacing:'-0.01em'}}>{day.title}</div>
+                          {isMultiLeg && <div style={{display:'inline-block',marginTop:4,fontSize:9,fontWeight:700,color:T.primary,letterSpacing:'.1em',textTransform:'uppercase',background:T.primarySoft,padding:'2px 6px',borderRadius:99}}>Tappa {position}</div>}
+                        </div>
+                        <button onClick={e=>{e.stopPropagation();openEditDay(day)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textDim,flexShrink:0}}><Pencil size={13}/></button>
+                        <button onClick={e=>{e.stopPropagation();deleteDay(day.id)}} style={{background:'none',border:'none',cursor:'pointer',padding:2,display:'flex',alignItems:'center',color:T.textFaint,flexShrink:0}}><Trash2 size={13}/></button>
                       </div>
                       <div style={{fontSize:11.5,color:T.textDim,marginTop:4,display:'flex',gap:10,flexWrap:'wrap',alignItems:'center'}}>
                         <span style={{display:'flex',alignItems:'center',gap:3}}><MapPin size={10}/>{day.place}</span>
