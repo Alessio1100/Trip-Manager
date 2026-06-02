@@ -27,7 +27,6 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
           href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600;700&display=swap"
           rel="stylesheet"
         />
-        <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
         <link rel="manifest" href="/manifest.json" />
         {/* iOS apple-touch-icon — una per ogni dimensione schermo */}
         <link rel="apple-touch-icon" href="/icons/apple-touch-icon.png" />

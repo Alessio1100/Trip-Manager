@@ -244,7 +244,7 @@ const btnPrimary: React.CSSProperties   = {flex:1,background:T.primary,border:'n
 const btnSecondary: React.CSSProperties = {flex:1,background:T.surface,border:`1px solid ${T.border}`,borderRadius:12,padding:'14px 16px',fontFamily:T.fontBody,fontSize:14.5,fontWeight:600,color:T.textDim,cursor:'pointer',letterSpacing:'-0.005em'}
 
 /* ─── DYNAMIC MAP ─── */
-const MapLeafletDynamic = dynamic(() => import('@/components/MapLeaflet'), {
+const MapLeafletDynamic = dynamic(() => import('@/components/MapboxGlobe'), {
   ssr: false,
   loading: () => (
     <div style={{display:'flex',alignItems:'center',justifyContent:'center',height:'100%',color:T.textDim,fontSize:14,flexDirection:'column',gap:10}}>
