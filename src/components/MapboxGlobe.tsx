@@ -162,8 +162,8 @@ export default function MapboxGlobe({ itinerary, onLocationClick }: Props) {
           const key = `${f.place}→${t.place}`
           if (AIR_SEGMENTS.has(key)) {
             airFeatures.push({
-              type: 'Feature', properties: {},
-              geometry: { type: 'LineString', coordinates: [[f.lng, f.lat], [t.lng, t.lat]] },
+              type: 'Feature' as const, properties: {},
+              geometry: { type: 'LineString' as const, coordinates: [[f.lng, f.lat], [t.lng, t.lat]] },
             })
           } else {
             landSegments.push({ fromLng: f.lng, fromLat: f.lat, toLng: t.lng, toLat: t.lat })
@@ -175,15 +175,15 @@ export default function MapboxGlobe({ itinerary, onLocationClick }: Props) {
           landSegments.map(s => fetchRoadCoords(s.fromLng, s.fromLat, s.toLng, s.toLat, token))
         )
         const landFeatures = roadCoords.map(coords => ({
-          type: 'Feature', properties: {},
-          geometry: { type: 'LineString', coordinates: coords },
+          type: 'Feature' as const, properties: {},
+          geometry: { type: 'LineString' as const, coordinates: coords },
         }))
 
         // ── Layer rotte terrestri
         if (landFeatures.length > 0) {
           map.addSource('land-route', {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: landFeatures },
+            data: { type: 'FeatureCollection' as const, features: landFeatures },
           })
           map.addLayer({ id: 'land-glow', type: 'line', source: 'land-route',
             layout: { 'line-join': 'round', 'line-cap': 'round' },
@@ -197,7 +197,7 @@ export default function MapboxGlobe({ itinerary, onLocationClick }: Props) {
         if (airFeatures.length > 0) {
           map.addSource('air-route', {
             type: 'geojson',
-            data: { type: 'FeatureCollection', features: airFeatures },
+            data: { type: 'FeatureCollection' as const, features: airFeatures },
           })
           map.addLayer({ id: 'air-glow', type: 'line', source: 'air-route',
             layout: { 'line-join': 'round', 'line-cap': 'round' },
@@ -230,8 +230,8 @@ export default function MapboxGlobe({ itinerary, onLocationClick }: Props) {
               pLng += OFFSET_R * Math.sin(angle) / Math.cos(lat * Math.PI / 180)
             }
             pinFeatures.push({
-              type: 'Feature',
-              geometry: { type: 'Point', coordinates: [pLng, pLat] },
+              type: 'Feature' as const,
+              geometry: { type: 'Point' as const, coordinates: [pLng, pLat] },
               properties: { dayId: day.id, day: day.day, place: day.place, label: placeLabel, image: `pin-${day.day}` },
             })
           })
@@ -239,7 +239,7 @@ export default function MapboxGlobe({ itinerary, onLocationClick }: Props) {
 
         map.addSource('pins', {
           type: 'geojson',
-          data: { type: 'FeatureCollection', features: pinFeatures },
+          data: { type: 'FeatureCollection' as const, features: pinFeatures },
           cluster: true, clusterMaxZoom: 5, clusterRadius: 20,
         })
 
