@@ -35,7 +35,7 @@ interface Props {
 
 // Palette
 const ROUTE_LAND = '#C2622A'   // terracotta caldo
-const ROUTE_AIR  = '#38BDF8'   // sky blue
+const ROUTE_AIR  = '#1C1410'   // nero espresso
 const PIN_RING   = '#C2622A'
 const PIN_NUM    = '#7C2D12'   // marrone scuro
 const CLUSTER_BG = '#C2622A'
