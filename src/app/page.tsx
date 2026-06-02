@@ -731,6 +731,50 @@ export default function App() {
               </div>
             )}
 
+            {/* CANCELLAZIONI GRATUITE */}
+            {(()=>{
+              const cancItems = data.items
+                .filter(i => i.cancGratuita && i.cancScadenza)
+                .map(i => {
+                  const diff = Math.ceil((new Date(i.cancScadenza+'T00:00:00').getTime() - oggi.getTime()) / 86400000)
+                  return { ...i, diff }
+                })
+                .sort((a,b) => a.diff - b.diff)
+              if (!cancItems.length) return null
+              return (
+                <div style={{background:T.surface,border:`1px solid ${T.borderSoft}`,boxShadow:T.shadowSm,borderRadius:20,overflow:'hidden'}}>
+                  <div style={{padding:'14px 18px 10px',display:'flex',alignItems:'center',gap:8}}>
+                    <div style={{fontSize:11,fontWeight:700,textTransform:'uppercase',letterSpacing:'.08em',color:T.textDim}}>Cancellazione gratuita</div>
+                  </div>
+                  <div style={{display:'flex',flexDirection:'column'}}>
+                    {cancItems.map((i,idx) => {
+                      const expired = i.diff < 0
+                      const urgent  = i.diff >= 0 && i.diff <= 7
+                      const accent  = expired ? T.danger : urgent ? T.warning : T.success
+                      const accentBg = expired ? T.dangerSoft : urgent ? T.warningSoft : T.successSoft
+                      return (
+                        <div key={i.id} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 18px',borderTop: idx===0?'none':`1px solid ${T.borderSoft}`}}>
+                          <div style={{flex:1,minWidth:0}}>
+                            <div style={{fontSize:13.5,fontWeight:600,color:T.text,letterSpacing:'-0.005em',whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{i.voce}</div>
+                            {i.note && <div style={{fontSize:11.5,color:T.textDim,marginTop:2,whiteSpace:'nowrap',overflow:'hidden',textOverflow:'ellipsis'}}>{i.note}</div>}
+                          </div>
+                          <div style={{background:accentBg,color:accent,borderRadius:99,padding:'3px 10px',fontSize:11,fontWeight:700,whiteSpace:'nowrap',flexShrink:0}}>
+                            {expired
+                              ? `Scaduta ${fmtDate(i.cancScadenza)}`
+                              : i.diff === 0
+                              ? 'Scade oggi'
+                              : i.diff === 1
+                              ? 'Scade domani'
+                              : `${fmtDate(i.cancScadenza)}`}
+                          </div>
+                        </div>
+                      )
+                    })}
+                  </div>
+                </div>
+              )
+            })()}
+
             <div style={{height:24}}/>
           </div>
         </div>

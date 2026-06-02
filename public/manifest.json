@@ -1,0 +1,24 @@
+{
+  "name": "Perù 2026 · Trip Planner",
+  "short_name": "Perù 2026",
+  "description": "Pianificatore viaggio Perù – 13 giorni sulle Ande",
+  "start_url": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#171310",
+  "theme_color": "#171310",
+  "icons": [
+    {
+      "src": "/icons/logo.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icons/logo.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
+  ]
+}
