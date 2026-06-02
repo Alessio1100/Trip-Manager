@@ -71,8 +71,7 @@ const SECTIONS    = ['PUNTI CRITICI','BUROCRAZIA','ALLOGGI','TRASPORTI','TOUR','
 const CATS        = ['Voli','Hotel','Bus','Trasporti','Tour','Ingressi','Documenti','Salute','Homestay','Cibo','Varie']
 const QUANDO_OPTS = ['SUBITO','Prima di partire','Online','In loco','In loco/Online','In loco/Tour','Online/Agenzia']
 const ACT_TYPES   = ['👣 Visita','🍽 Pasto','🚌 Trasporto','🛏 Alloggio','🎫 Ingresso','🥾 Trek','📷 Foto','✈️ Volo','🚂 Treno','💤 Riposo']
-const TRIP_START  = '2026-07-25'
-const TRIP_END    = '2026-08-06'
+// TRIP_START e TRIP_END sono derivati dall'itinerario in fase di render
 
 const PLACE_COORDS: Record<string, [number, number]> = {
   'Paracas':         [-13.8303, -76.2503],
@@ -499,11 +498,14 @@ export default function App() {
   const progress  = data.items.length ? Math.round(doneCount/data.items.length*100) : 0
 
   const oggi      = new Date(); oggi.setHours(0,0,0,0)
-  const startDate = new Date(TRIP_START+'T00:00:00')
-  const endDate   = new Date(TRIP_END+'T00:00:00')
-  const daysToGo  = Math.ceil((startDate.getTime()-oggi.getTime())/86400000)
-  const inViaggio = oggi>=startDate && oggi<=endDate
-  const finito    = oggi>endDate
+  const tripDates = data.itinerary.map(d=>d.date).filter(Boolean).sort()
+  const TRIP_START = tripDates[0] ?? ''
+  const TRIP_END   = tripDates[tripDates.length-1] ?? ''
+  const startDate = TRIP_START ? new Date(TRIP_START+'T00:00:00') : null
+  const endDate   = TRIP_END   ? new Date(TRIP_END+'T00:00:00')   : null
+  const daysToGo  = startDate ? Math.ceil((startDate.getTime()-oggi.getTime())/86400000) : 0
+  const inViaggio = startDate && endDate ? oggi>=startDate && oggi<=endDate : false
+  const finito    = endDate ? oggi>endDate : false
 
   const prossimoAlloggio = [...data.items].filter(i=>i.section==='ALLOGGI'&&!i.done&&i.giorno).sort((a,b)=>a.giorno.localeCompare(b.giorno))[0]
   const prossimoGiorno   = [...data.itinerary].sort((a,b)=>a.day!==b.day?a.day-b.day:a.id-b.id).find(d=>!d.date||new Date(d.date+'T00:00:00')>=oggi) || [...data.itinerary].sort((a,b)=>a.day!==b.day?a.day-b.day:a.id-b.id)[0]
@@ -599,7 +601,7 @@ export default function App() {
                 <div style={{position:'relative'}}>
                   <div style={{fontSize:10,color:'#9C8F73',textTransform:'uppercase',letterSpacing:'.16em',marginBottom:8,fontWeight:600}}>Sei in viaggio</div>
                   <div style={{fontFamily:T.fontDisplay,fontSize:28,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1.05}}>Buon Perù ✈️</div>
-                  <div style={{fontSize:12,color:'#A89B7E',marginTop:8}}>Termina il {fmtDate(TRIP_END)}</div>
+                  <div style={{fontSize:12,color:'#A89B7E',marginTop:8}}>Termina il {TRIP_END ? fmtDate(TRIP_END) : '—'}</div>
                 </div>
               ) : (
                 <div style={{position:'relative',display:'flex',alignItems:'center',justifyContent:'space-between',gap:14}}>
@@ -611,7 +613,7 @@ export default function App() {
                       <span style={{fontFamily:T.fontDisplay,fontSize:60,fontWeight:700,color:T.goldBright,lineHeight:.9,letterSpacing:'-0.04em'}}>{daysToGo}</span>
                       <span style={{fontFamily:T.fontDisplay,fontSize:14,color:'#A89B7E',fontWeight:600,letterSpacing:'-0.005em'}}>giorni</span>
                     </div>
-                    <div style={{fontSize:11,color:'#7C7058',marginTop:4,fontVariantNumeric:'tabular-nums'}}>{fmtDate(TRIP_START)} · {doneCount}/{data.items.length} task</div>
+                    <div style={{fontSize:11,color:'#7C7058',marginTop:4,fontVariantNumeric:'tabular-nums'}}>{TRIP_START ? fmtDate(TRIP_START) : '—'} · {doneCount}/{data.items.length} task</div>
                   </div>
                   <div style={{position:'relative',width:62,height:62,flexShrink:0}}>
                     <svg width="62" height="62" style={{transform:'rotate(-90deg)'}}>
