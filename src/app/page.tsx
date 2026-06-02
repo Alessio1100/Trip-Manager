@@ -261,6 +261,14 @@ export default function App() {
   /* core */
   const [data, setData]         = useState<AppData|null>(null)
   const [page, setPage]         = useState<PageId>('dashboard')
+  const [isDesktop, setIsDesktop] = useState(false)
+  useEffect(() => {
+    const mq = window.matchMedia('(min-width: 1024px)')
+    setIsDesktop(mq.matches)
+    const handler = (e: MediaQueryListEvent) => setIsDesktop(e.matches)
+    mq.addEventListener('change', handler)
+    return () => mq.removeEventListener('change', handler)
+  }, [])
   const [filter, setFilter]     = useState('Tutto')
   const [openDays, setOpenDays] = useState<Set<number>>(new Set())
   const [syncing, setSyncing]   = useState(false)
@@ -513,9 +521,9 @@ export default function App() {
 
   /* ── UI HELPERS ── */
   const PAGE_STYLE: React.CSSProperties = {
-    minHeight:'100dvh',
-    paddingBottom:'calc(96px + env(safe-area-inset-bottom,0px))',
-    WebkitOverflowScrolling:'touch',
+    minHeight: isDesktop ? '100vh' : '100dvh',
+    paddingBottom: isDesktop ? 24 : 'calc(96px + env(safe-area-inset-bottom,0px))',
+    WebkitOverflowScrolling: 'touch',
   }
 
   const PageHeader = ({title, subtitle, action, eyebrow}:{title:string; subtitle?:string; action?:React.ReactNode; eyebrow?:string}) => (
@@ -560,9 +568,11 @@ export default function App() {
     {id:'note',       icon:<StickyNote  size={20} strokeWidth={page==='note'?2.4:1.7}/>, lbl:'Note'},
   ]
 
+  const SIDEBAR_W = 230
+
   return (
-    <div style={{fontFamily:T.fontBody,background:T.bg,color:T.text,maxWidth:600,margin:'0 auto',minHeight:'100dvh',position:'relative'}}>
-      {syncing && <div style={{position:'fixed',top:0,left:0,right:0,height:2.5,background:`linear-gradient(90deg,transparent,${T.goldBright},transparent)`,zIndex:999,backgroundSize:'200% 100%',animation:'shimmer 1.5s linear infinite'}}/>}
+    <div style={{fontFamily:T.fontBody,background:T.bg,color:T.text,minHeight:'100dvh',display:isDesktop?'flex':'block',position:'relative'}}>
+      {syncing && <div style={{position:'fixed',top:0,left:isDesktop?SIDEBAR_W:0,right:0,height:2.5,background:`linear-gradient(90deg,transparent,${T.goldBright},transparent)`,zIndex:999,backgroundSize:'200% 100%',animation:'shimmer 1.5s linear infinite'}}/>}
 
       {/* keyframes */}
       <style>{`
@@ -573,6 +583,37 @@ export default function App() {
         input:focus, select:focus, textarea:focus { border-color: ${T.gold} !important; box-shadow: 0 0 0 3px ${T.goldSoft}; }
         button:active { transform: scale(0.98); }
       `}</style>
+
+      {/* ══ SIDEBAR DESKTOP ══ */}
+      {isDesktop && (
+        <aside style={{width:SIDEBAR_W,flexShrink:0,background:T.surfaceDark,minHeight:'100vh',position:'fixed',top:0,left:0,bottom:0,display:'flex',flexDirection:'column',zIndex:1100,borderRight:`1px solid rgba(255,255,255,.06)`}}>
+          {/* Logo */}
+          <div style={{padding:'28px 22px 20px',borderBottom:`1px solid rgba(255,255,255,.07)`}}>
+            <div style={{fontFamily:T.fontDisplay,fontSize:20,fontWeight:700,color:T.goldBright,letterSpacing:'-0.02em',lineHeight:1}}>Perù 2026</div>
+            <div style={{fontSize:11,color:'#7C7058',marginTop:5,fontWeight:500,letterSpacing:'.04em'}}>25 lug – 6 ago</div>
+          </div>
+          {/* Nav items */}
+          <nav style={{flex:1,padding:'12px 10px',display:'flex',flexDirection:'column',gap:2}}>
+            {navItems.map(({id,icon,lbl}) => {
+              const active = page === id
+              return (
+                <button key={id} onClick={() => setPage(id)} style={{display:'flex',alignItems:'center',gap:12,padding:'11px 14px',border:'none',borderRadius:14,background:active?'rgba(240,198,84,.12)':'transparent',color:active?T.goldBright:'#807464',fontFamily:T.fontBody,fontSize:13.5,fontWeight:active?700:500,cursor:'pointer',textAlign:'left',width:'100%',transition:'background .15s, color .15s',letterSpacing:'-0.005em'}} onMouseEnter={e=>{if(!active)(e.currentTarget as HTMLElement).style.background='rgba(255,255,255,.05)'}} onMouseLeave={e=>{if(!active)(e.currentTarget as HTMLElement).style.background='transparent'}}>
+                  <span style={{flexShrink:0}}>{icon}</span>
+                  {lbl}
+                  {active && <span style={{marginLeft:'auto',width:5,height:5,borderRadius:99,background:T.goldBright,flexShrink:0}}/>}
+                </button>
+              )
+            })}
+          </nav>
+          {/* Sync + info */}
+          <div style={{padding:'16px 18px',borderTop:`1px solid rgba(255,255,255,.07)`}}>
+            <SyncDot/>
+          </div>
+        </aside>
+      )}
+
+      {/* ══ CONTENUTO PRINCIPALE ══ */}
+      <div style={isDesktop ? {flex:1,marginLeft:SIDEBAR_W,minHeight:'100vh',position:'relative'} : {maxWidth:600,margin:'0 auto',minHeight:'100dvh',position:'relative',width:'100%'}}>
 
       {/* ══════════════════════════════
           DASHBOARD
@@ -1226,7 +1267,10 @@ export default function App() {
         </div>
       )}
 
-      {/* ══ BOTTOM NAV — floating glass ══ */}
+      </div>{/* fine wrapper contenuto */}
+
+      {/* ══ BOTTOM NAV — solo mobile ══ */}
+      {!isDesktop && (
       <div style={{position:'fixed',bottom:0,left:0,right:0,maxWidth:600,margin:'0 auto',zIndex:1100,paddingBottom:'env(safe-area-inset-bottom,0px)',pointerEvents:'none',background:`linear-gradient(to top,${T.bg} 50%,${T.bg}00)`}}>
         <nav style={{margin:'12px 14px 14px',background:T.surfaceDark,display:'flex',borderRadius:22,padding:'8px 6px',boxShadow:T.shadowLg,pointerEvents:'auto'}}>
           {navItems.map(({id,icon,lbl})=>{
@@ -1240,6 +1284,7 @@ export default function App() {
           })}
         </nav>
       </div>
+      )}
 
       {/* ══ SEARCH OVERLAY ══ */}
       {searchOpen&&(
